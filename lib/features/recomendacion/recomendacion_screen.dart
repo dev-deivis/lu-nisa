@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../data/models/cultivo_recomendado.dart';
+import '../../ml/image_analyzer.dart';
 
 const _meses = [
   '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -117,6 +118,7 @@ class _RecomendacionScreenState extends State<RecomendacionScreen> {
                   mes: mes,
                   recomendaciones: provider.recomendaciones,
                   clima: provider.climaActual,
+                  condicion: provider.condicionParcela,
                 ),
     );
   }
@@ -186,12 +188,14 @@ class _ContenidoRecomendacion extends StatelessWidget {
   final int mes;
   final List<CultivoRecomendado> recomendaciones;
   final ClimaMes? clima;
+  final ParcelCondition? condicion;
 
   const _ContenidoRecomendacion({
     required this.municipio,
     required this.mes,
     required this.recomendaciones,
     required this.clima,
+    required this.condicion,
   });
 
   @override
@@ -202,6 +206,10 @@ class _ContenidoRecomendacion extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           _EncabezadoMunicipio(municipio: municipio, mes: mes),
+          if (condicion != null) ...[
+            const SizedBox(height: 10),
+            _BadgeSuelo(condicion: condicion!),
+          ],
           if (clima != null) ...[
             const SizedBox(height: 12),
             _TarjetaClima(clima: clima!),
@@ -270,6 +278,89 @@ class _EncabezadoMunicipio extends StatelessWidget {
           const Text('🌽', style: TextStyle(fontSize: 30)),
         ],
       ),
+    );
+  }
+}
+
+class _BadgeSuelo extends StatelessWidget {
+  final ParcelCondition condicion;
+  const _BadgeSuelo({required this.condicion});
+
+  static const _config = {
+    'humedo': (
+      label: 'Suelo húmedo',
+      emoji: '🌧️',
+      color: Color(0xFF1565C0),
+      bg: Color(0xFFE3F2FD),
+    ),
+    'seco': (
+      label: 'Suelo seco',
+      emoji: '☀️',
+      color: Color(0xFFE65100),
+      bg: Color(0xFFFFF3E0),
+    ),
+    'fertil': (
+      label: 'Tierra fértil',
+      emoji: '🌱',
+      color: Color(0xFF2D6A4F),
+      bg: Color(0xFFE8F5E9),
+    ),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final cfg = _config[condicion.soilType] ?? _config['fertil']!;
+
+    return Row(
+      children: [
+        Container(
+          padding:
+              const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          decoration: BoxDecoration(
+            color: cfg.bg,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: cfg.color.withAlpha(80)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(cfg.emoji, style: const TextStyle(fontSize: 16)),
+              const SizedBox(width: 6),
+              Text(
+                cfg.label,
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: cfg.color),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 8),
+        if (condicion.hasVegetation)
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8F5E9),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: AppTheme.verdeClaro.withAlpha(120)),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('🌿', style: TextStyle(fontSize: 14)),
+                SizedBox(width: 5),
+                Text('Tierra activa',
+                    style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.verde)),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }

@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
+import '../../ml/image_analyzer.dart';
 
 class CamaraScreen extends StatefulWidget {
   const CamaraScreen({super.key});
@@ -17,6 +18,7 @@ class _CamaraScreenState extends State<CamaraScreen> {
   final ImagePicker _picker = ImagePicker();
   XFile? _imagen;
   bool _cargando = false;
+  String _estadoAnalisis = 'Analizando imagen...';
 
   Future<void> _tomarFoto() async {
     final foto = await _picker.pickImage(
@@ -36,12 +38,26 @@ class _CamaraScreenState extends State<CamaraScreen> {
     if (foto != null) setState(() => _imagen = foto);
   }
 
-  void _analizarCultivo() {
-    setState(() => _cargando = true);
-    // Simula procesamiento breve antes de navegar
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) context.go('/recomendacion');
+  Future<void> _analizarCultivo() async {
+    if (_imagen == null) return;
+    setState(() {
+      _cargando = true;
+      _estadoAnalisis = 'Analizando imagen...';
     });
+
+    try {
+      setState(() => _estadoAnalisis = 'Detectando vegetación y suelo...');
+      final condicion = await ImageAnalyzer.analyzeParcel(_imagen!.path);
+
+      if (!mounted) return;
+      context.read<AppProvider>().setCondicionParcela(condicion);
+      context.go('/recomendacion');
+    } catch (_) {
+      if (!mounted) return;
+      // Si el análisis falla, navega sin condición (usa datos del JSON puro)
+      context.read<AppProvider>().setCondicionParcela(ParcelCondition.sinFoto);
+      context.go('/recomendacion');
+    }
   }
 
   @override
@@ -54,7 +70,8 @@ class _CamaraScreenState extends State<CamaraScreen> {
         title: const Text('Foto del cultivo'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.go('/municipio'),
+          onPressed:
+              _cargando ? null : () => context.go('/municipio'),
         ),
       ),
       body: SafeArea(
@@ -65,18 +82,20 @@ class _CamaraScreenState extends State<CamaraScreen> {
             children: [
               _InfoMunicipio(municipio: municipio),
               const SizedBox(height: 20),
-              Expanded(child: _AreaFoto(imagen: _imagen)),
-              const SizedBox(height: 20),
-              _BotonesFoto(
-                onCamara: _tomarFoto,
-                onGaleria: _seleccionarGaleria,
+              Expanded(
+                child: _cargando
+                    ? _EstadoAnalisis(mensaje: _estadoAnalisis)
+                    : _AreaFoto(imagen: _imagen),
               ),
-              if (_imagen != null) ...[
-                const SizedBox(height: 16),
-                _BotonAnalizar(
-                  cargando: _cargando,
-                  onTap: _analizarCultivo,
+              const SizedBox(height: 20),
+              if (!_cargando)
+                _BotonesFoto(
+                  onCamara: _tomarFoto,
+                  onGaleria: _seleccionarGaleria,
                 ),
+              if (_imagen != null && !_cargando) ...[
+                const SizedBox(height: 16),
+                _BotonAnalizar(onTap: _analizarCultivo),
               ],
             ],
           ),
@@ -118,6 +137,42 @@ class _InfoMunicipio extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EstadoAnalisis extends StatelessWidget {
+  final String mensaje;
+  const _EstadoAnalisis({required this.mensaje});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppTheme.verdeMuy.withAlpha(80),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const CircularProgressIndicator(color: AppTheme.verde),
+          const SizedBox(height: 20),
+          Text(
+            mensaje,
+            style: const TextStyle(
+                fontSize: 16,
+                color: AppTheme.verde,
+                fontWeight: FontWeight.w500),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'ML Kit · análisis local',
+            style:
+                TextStyle(fontSize: 12, color: AppTheme.textoSecundario),
           ),
         ],
       ),
@@ -217,26 +272,18 @@ class _BotonesFoto extends StatelessWidget {
 }
 
 class _BotonAnalizar extends StatelessWidget {
-  final bool cargando;
-  final VoidCallback onTap;
+  final Future<void> Function() onTap;
 
-  const _BotonAnalizar({required this.cargando, required this.onTap});
+  const _BotonAnalizar({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       height: 56,
       child: ElevatedButton.icon(
-        onPressed: cargando ? null : onTap,
-        icon: cargando
-            ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                    strokeWidth: 2, color: Colors.white),
-              )
-            : const Icon(Icons.eco_rounded),
-        label: Text(cargando ? 'Analizando...' : 'Ver recomendación'),
+        onPressed: () => onTap(),
+        icon: const Icon(Icons.biotech_rounded),
+        label: const Text('Analizar y ver recomendación'),
         style: ElevatedButton.styleFrom(
           backgroundColor: AppTheme.tierra,
           foregroundColor: Colors.white,
