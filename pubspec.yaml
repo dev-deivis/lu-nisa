@@ -70,6 +70,7 @@ flutter:
   assets:
     - assets/data/historico_sierra_norte.csv
     - assets/data/cultivos_sierra_norte.csv
+    - assets/data/recomendaciones.json
     - assets/model/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
