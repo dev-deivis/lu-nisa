@@ -3,75 +3,51 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
+import '../../data/models/cultivo_recomendado.dart';
 
-// Datos mock de recomendaciones por cultivo
-const List<Map<String, dynamic>> _cultivos = [
-  {
-    'nombre': 'Maíz criollo',
-    'emoji': '🌽',
-    'fechaSiembra': 'Mayo – Junio',
-    'diasCosecha': 120,
-    'temperatura': '14–22°C',
-    'lluvia': '600–800 mm',
-    'descripcion':
-        'El maíz criollo de la Sierra Norte es resistente a la altura y las heladas tardías. Ideal para terrenos con pendiente.',
-    'consejos': [
-      'Preparar terreno en Marzo–Abril',
-      'Sembrar en curvas de nivel',
-      'Fertilizar con composta local',
-    ],
-  },
-  {
-    'nombre': 'Frijol negro',
-    'emoji': '🫘',
-    'fechaSiembra': 'Junio – Julio',
-    'diasCosecha': 90,
-    'temperatura': '15–24°C',
-    'lluvia': '400–700 mm',
-    'descripcion':
-        'El frijol negro es cultivo complementario al maíz en el sistema de milpa. Fija nitrógeno en el suelo.',
-    'consejos': [
-      'Sembrar asociado con maíz',
-      'Evitar encharcamiento',
-      'Deshierbar a los 30 días',
-    ],
-  },
-  {
-    'nombre': 'Chile de agua',
-    'emoji': '🌶️',
-    'fechaSiembra': 'Abril – Mayo',
-    'diasCosecha': 100,
-    'temperatura': '16–26°C',
-    'lluvia': '500–700 mm',
-    'descripcion':
-        'Variedad local de chile adaptada a las condiciones de la Sierra. Alta demanda en mercados regionales.',
-    'consejos': [
-      'Trasplantar plántula de vivero',
-      'Riego por goteo si disponible',
-      'Controlar plagas con extracto de ajo',
-    ],
-  },
-  {
-    'nombre': 'Quelite / Verdolaga',
-    'emoji': '🥬',
-    'fechaSiembra': 'Todo el año',
-    'diasCosecha': 45,
-    'temperatura': '12–20°C',
-    'lluvia': '300–600 mm',
-    'descripcion':
-        'Planta silvestre con gran valor nutricional. Crece naturalmente en milpas y bordos de la Sierra.',
-    'consejos': [
-      'No requiere preparación especial',
-      'Recolectar antes de que florezca',
-      'Conservar humedad del suelo',
-    ],
-  },
+const _meses = [
+  '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
 ];
 
-Map<String, dynamic> _getMockRecomendacion(String municipio) {
-  // Asigna un cultivo determinista según el municipio (mock)
-  final indice = municipio.length % _cultivos.length;
-  return _cultivos[indice];
+const _emojiCultivo = {
+  'Maíz': '🌽', 'maíz': '🌽', 'maiz': '🌽',
+  'Frijol': '🫘', 'frijol': '🫘',
+  'Chile': '🌶️', 'chile': '🌶️',
+  'Tomate': '🍅', 'tomate': '🍅',
+  'Quelite': '🥬', 'quelite': '🥬',
+  'Durazno': '🍑', 'durazno': '🍑',
+  'Manzana': '🍎', 'manzana': '🍎',
+  'Trigo': '🌾', 'trigo': '🌾',
+  'Café': '☕', 'cafe': '☕',
+  'Aguacate': '🥑', 'aguacate': '🥑',
+  'Calabaza': '🎃', 'calabaza': '🎃',
+  'Papa': '🥔', 'papa': '🥔',
+  'Zanahoria': '🥕', 'zanahoria': '🥕',
+  'Epazote': '🌿', 'epazote': '🌿',
+};
+
+String _emoji(String cultivo) {
+  for (final entry in _emojiCultivo.entries) {
+    if (cultivo.toLowerCase().contains(entry.key.toLowerCase())) {
+      return entry.value;
+    }
+  }
+  return '🌱';
+}
+
+Color _colorScore(int score) {
+  if (score >= 90) return const Color(0xFF2D6A4F);
+  if (score >= 75) return const Color(0xFF52B788);
+  if (score >= 60) return const Color(0xFFE9C46A);
+  return Colors.grey;
+}
+
+String _etiquetaScore(int score) {
+  if (score >= 90) return 'Excelente';
+  if (score >= 75) return 'Bueno';
+  if (score >= 60) return 'Regular';
+  return 'Bajo';
 }
 
 class RecomendacionScreen extends StatefulWidget {
@@ -82,32 +58,40 @@ class RecomendacionScreen extends StatefulWidget {
 }
 
 class _RecomendacionScreenState extends State<RecomendacionScreen> {
+  bool _consultaGuardada = false;
+
   @override
   void initState() {
     super.initState();
-    _guardarConsulta();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _cargarDatos());
   }
 
-  void _guardarConsulta() {
+  Future<void> _cargarDatos() async {
     final provider = context.read<AppProvider>();
-    final municipio =
-        provider.municipioSeleccionado ?? 'Municipio desconocido';
-    final cultivo = _getMockRecomendacion(municipio);
-    provider.agregarConsulta(
-      Consulta(
-        municipio: municipio,
-        cultivo: cultivo['nombre'] as String,
-        fechaSiembra: cultivo['fechaSiembra'] as String,
-        fechaConsulta: DateTime.now(),
-      ),
-    );
+    final municipio = provider.municipioSeleccionado ?? '';
+    final mes = DateTime.now().month;
+    await provider.cargarRecomendacion(municipio, mes);
+    _guardarEnHistorial();
+  }
+
+  void _guardarEnHistorial() {
+    if (_consultaGuardada) return;
+    final provider = context.read<AppProvider>();
+    if (provider.recomendaciones.isEmpty) return;
+    _consultaGuardada = true;
+    provider.agregarConsulta(Consulta(
+      municipio: provider.municipioSeleccionado ?? '',
+      cultivo: provider.recomendaciones.first.cultivo,
+      fechaSiembra: provider.recomendaciones.first.mesesSiembra,
+      fechaConsulta: DateTime.now(),
+    ));
   }
 
   @override
   Widget build(BuildContext context) {
-    final municipio =
-        context.watch<AppProvider>().municipioSeleccionado ?? 'tu municipio';
-    final cultivo = _getMockRecomendacion(municipio);
+    final provider = context.watch<AppProvider>();
+    final municipio = provider.municipioSeleccionado ?? 'tu municipio';
+    final mes = DateTime.now().month;
 
     return Scaffold(
       appBar: AppBar(
@@ -124,148 +108,71 @@ class _RecomendacionScreenState extends State<RecomendacionScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _TarjetaCultivoPrincipal(cultivo: cultivo, municipio: municipio),
-            const SizedBox(height: 16),
-            _TarjetaCondicionesClimaticas(cultivo: cultivo),
-            const SizedBox(height: 16),
-            _TarjetaConsejos(consejos: cultivo['consejos'] as List),
-            const SizedBox(height: 24),
-            _BotonesAccion(),
-          ],
-        ),
-      ),
+      body: provider.cargandoRecomendacion
+          ? _EstadoCargando()
+          : provider.recomendaciones.isEmpty
+              ? _SinDatos(municipio: municipio)
+              : _ContenidoRecomendacion(
+                  municipio: municipio,
+                  mes: mes,
+                  recomendaciones: provider.recomendaciones,
+                  clima: provider.climaActual,
+                ),
     );
   }
 }
 
-class _TarjetaCultivoPrincipal extends StatelessWidget {
-  final Map<String, dynamic> cultivo;
-  final String municipio;
-
-  const _TarjetaCultivoPrincipal(
-      {required this.cultivo, required this.municipio});
-
+class _EstadoCargando extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.verde,
-        borderRadius: BorderRadius.circular(16),
-      ),
+    return const Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(cultivo['emoji'] as String,
-              style: const TextStyle(fontSize: 64)),
-          const SizedBox(height: 12),
-          Text(
-            cultivo['nombre'] as String,
-            style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: Colors.white),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Recomendado para $municipio',
-            style:
-                const TextStyle(fontSize: 14, color: Colors.white70),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppTheme.maiz,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.calendar_month_rounded,
-                    color: AppTheme.verde, size: 18),
-                const SizedBox(width: 6),
-                Text(
-                  'Siembra: ${cultivo['fechaSiembra']}',
-                  style: const TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
-                      color: AppTheme.verde),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            cultivo['descripcion'] as String,
-            style: const TextStyle(
-                fontSize: 14, color: Colors.white70, height: 1.5),
-            textAlign: TextAlign.center,
-          ),
+          CircularProgressIndicator(color: AppTheme.verde),
+          SizedBox(height: 20),
+          Text('Consultando datos del cultivo...',
+              style: TextStyle(fontSize: 16, color: AppTheme.textoSecundario)),
         ],
       ),
     );
   }
 }
 
-class _TarjetaCondicionesClimaticas extends StatelessWidget {
-  final Map<String, dynamic> cultivo;
-  const _TarjetaCondicionesClimaticas({required this.cultivo});
+class _SinDatos extends StatelessWidget {
+  final String municipio;
+  const _SinDatos({required this.municipio});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Center(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Row(
-              children: [
-                Icon(Icons.thermostat_rounded,
-                    color: AppTheme.tierra, size: 22),
-                SizedBox(width: 8),
-                Text('Condiciones óptimas',
-                    style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textoPrincipal)),
-              ],
-            ),
+            const Text('🌾', style: TextStyle(fontSize: 64)),
             const SizedBox(height: 16),
-            Row(
-              children: [
-                Expanded(
-                  child: _IndicadorClimatico(
-                    icono: '🌡️',
-                    etiqueta: 'Temperatura',
-                    valor: cultivo['temperatura'] as String,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _IndicadorClimatico(
-                    icono: '🌧️',
-                    etiqueta: 'Lluvia anual',
-                    valor: cultivo['lluvia'] as String,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: _IndicadorClimatico(
-                    icono: '📅',
-                    etiqueta: 'Días cosecha',
-                    valor: '${cultivo['diasCosecha']} días',
-                  ),
-                ),
-              ],
+            Text(
+              'Sin datos para $municipio',
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textoPrincipal),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'No se encontraron recomendaciones para este mes.',
+              style:
+                  TextStyle(fontSize: 14, color: AppTheme.textoSecundario),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            ElevatedButton.icon(
+              onPressed: () => context.go('/municipio'),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Cambiar municipio'),
             ),
           ],
         ),
@@ -274,93 +181,352 @@ class _TarjetaCondicionesClimaticas extends StatelessWidget {
   }
 }
 
-class _IndicadorClimatico extends StatelessWidget {
-  final String icono;
-  final String etiqueta;
-  final String valor;
+class _ContenidoRecomendacion extends StatelessWidget {
+  final String municipio;
+  final int mes;
+  final List<CultivoRecomendado> recomendaciones;
+  final ClimaMes? clima;
 
-  const _IndicadorClimatico(
-      {required this.icono, required this.etiqueta, required this.valor});
+  const _ContenidoRecomendacion({
+    required this.municipio,
+    required this.mes,
+    required this.recomendaciones,
+    required this.clima,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: AppTheme.fondoCalido,
-        borderRadius: BorderRadius.circular(10),
-      ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Text(icono, style: const TextStyle(fontSize: 24)),
-          const SizedBox(height: 4),
-          Text(
-            valor,
-            style: const TextStyle(
-                fontSize: 13,
+          _EncabezadoMunicipio(municipio: municipio, mes: mes),
+          if (clima != null) ...[
+            const SizedBox(height: 12),
+            _TarjetaClima(clima: clima!),
+          ],
+          const SizedBox(height: 20),
+          const Text(
+            'Cultivos recomendados',
+            style: TextStyle(
+                fontSize: 17,
                 fontWeight: FontWeight.bold,
                 color: AppTheme.textoPrincipal),
-            textAlign: TextAlign.center,
           ),
-          Text(
-            etiqueta,
-            style: const TextStyle(
-                fontSize: 11, color: AppTheme.textoSecundario),
-            textAlign: TextAlign.center,
-          ),
+          const SizedBox(height: 10),
+          ...recomendaciones.asMap().entries.map(
+                (e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: _TarjetaCultivo(
+                    posicion: e.key + 1,
+                    cultivo: e.value,
+                  ),
+                ),
+              ),
+          const SizedBox(height: 8),
+          _BotonesAccion(),
         ],
       ),
     );
   }
 }
 
-class _TarjetaConsejos extends StatelessWidget {
-  final List consejos;
-  const _TarjetaConsejos({required this.consejos});
+class _EncabezadoMunicipio extends StatelessWidget {
+  final String municipio;
+  final int mes;
+
+  const _EncabezadoMunicipio(
+      {required this.municipio, required this.mes});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: AppTheme.verde,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.place_rounded, color: Colors.white70, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(municipio,
+                    style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
+                Text(
+                  _meses[mes],
+                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                ),
+              ],
+            ),
+          ),
+          const Text('🌽', style: TextStyle(fontSize: 30)),
+        ],
+      ),
+    );
+  }
+}
+
+class _TarjetaClima extends StatelessWidget {
+  final ClimaMes clima;
+  const _TarjetaClima({required this.clima});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Row(
               children: [
-                Icon(Icons.tips_and_updates_rounded,
-                    color: AppTheme.maizOscuro, size: 22),
-                SizedBox(width: 8),
-                Text('Consejos de cultivo',
+                Icon(Icons.wb_sunny_rounded,
+                    color: AppTheme.maizOscuro, size: 18),
+                SizedBox(width: 6),
+                Text('Clima este mes',
                     style: TextStyle(
-                        fontSize: 16,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: AppTheme.textoPrincipal)),
               ],
             ),
             const SizedBox(height: 12),
-            ...consejos.map(
-              (consejo) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.check_circle_rounded,
-                        color: AppTheme.verdeClaro, size: 20),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        consejo as String,
-                        style: const TextStyle(
-                            fontSize: 15, color: AppTheme.textoPrincipal),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _DatoClima(
+                    icono: '🌡️',
+                    valor: '${clima.tempMedia.toStringAsFixed(1)}°C',
+                    etiqueta: 'Temp. media'),
+                _DatoClima(
+                    icono: '🌧️',
+                    valor: '${clima.precipitacion.toStringAsFixed(1)} mm',
+                    etiqueta: 'Lluvia'),
+                _DatoClima(
+                    icono: '💧',
+                    valor: '${clima.humedad.toStringAsFixed(0)}%',
+                    etiqueta: 'Humedad'),
+              ],
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _DatoClima extends StatelessWidget {
+  final String icono;
+  final String valor;
+  final String etiqueta;
+
+  const _DatoClima(
+      {required this.icono, required this.valor, required this.etiqueta});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(icono, style: const TextStyle(fontSize: 22)),
+        const SizedBox(height: 2),
+        Text(valor,
+            style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.textoPrincipal)),
+        Text(etiqueta,
+            style: const TextStyle(
+                fontSize: 11, color: AppTheme.textoSecundario)),
+      ],
+    );
+  }
+}
+
+class _TarjetaCultivo extends StatelessWidget {
+  final int posicion;
+  final CultivoRecomendado cultivo;
+
+  const _TarjetaCultivo(
+      {required this.posicion, required this.cultivo});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _colorScore(cultivo.score);
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Encabezado: posición + emoji + nombre + score
+            Row(
+              children: [
+                Container(
+                  width: 28,
+                  height: 28,
+                  decoration: BoxDecoration(
+                    color: posicion == 1 ? AppTheme.maiz : Colors.grey.shade200,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text('$posicion',
+                        style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: posicion == 1
+                                ? AppTheme.verde
+                                : AppTheme.textoSecundario)),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Text(_emoji(cultivo.cultivo),
+                    style: const TextStyle(fontSize: 26)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    cultivo.cultivo,
+                    style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.textoPrincipal),
+                  ),
+                ),
+                // Badge de score
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: color.withAlpha(30),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: color, width: 1),
+                  ),
+                  child: Text(
+                    '${cultivo.score} · ${_etiquetaScore(cultivo.score)}',
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: color),
+                  ),
+                ),
+              ],
+            ),
+
+            // Barra de score
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: cultivo.score / 100,
+                minHeight: 5,
+                backgroundColor: Colors.grey.shade200,
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+              ),
+            ),
+
+            const SizedBox(height: 12),
+            // Siembra y cosecha
+            Row(
+              children: [
+                Expanded(
+                  child: _InfoFecha(
+                    icono: Icons.agriculture_rounded,
+                    etiqueta: 'Siembra',
+                    valor: cultivo.mesesSiembra,
+                    color: AppTheme.verde,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: _InfoFecha(
+                    icono: Icons.grass_rounded,
+                    etiqueta: 'Cosecha',
+                    valor: cultivo.mesesCosecha,
+                    color: AppTheme.tierra,
+                  ),
+                ),
+              ],
+            ),
+
+            if (cultivo.notas.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              const Divider(height: 1),
+              const SizedBox(height: 10),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.info_outline_rounded,
+                      size: 16, color: AppTheme.textoSecundario),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      cultivo.notas,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textoSecundario,
+                          height: 1.4),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoFecha extends StatelessWidget {
+  final IconData icono;
+  final String etiqueta;
+  final String valor;
+  final Color color;
+
+  const _InfoFecha({
+    required this.icono,
+    required this.etiqueta,
+    required this.valor,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withAlpha(20),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icono, size: 14, color: color),
+              const SizedBox(width: 4),
+              Text(etiqueta,
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: color,
+                      fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: 2),
+          Text(valor,
+              style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: AppTheme.textoPrincipal)),
+        ],
       ),
     );
   }
@@ -377,12 +543,13 @@ class _BotonesAccion extends StatelessWidget {
           icon: const Icon(Icons.camera_alt_rounded),
           label: const Text('Nueva consulta'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         TextButton.icon(
           onPressed: () => context.go('/historial'),
           icon: const Icon(Icons.history_rounded),
           label: const Text('Ver historial'),
-          style: TextButton.styleFrom(foregroundColor: AppTheme.textoSecundario),
+          style: TextButton.styleFrom(
+              foregroundColor: AppTheme.textoSecundario),
         ),
       ],
     );
