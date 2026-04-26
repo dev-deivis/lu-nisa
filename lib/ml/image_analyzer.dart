@@ -4,7 +4,7 @@ import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 class ParcelCondition {
   final bool hasVegetation;
   final String soilType; // "humedo" | "seco" | "fertil"
-  final int scoreAdjustment; // -20..+20, ajuste uniforme para todas las recomendaciones
+  final int scoreAdjustment; // ajuste uniforme para todas las recomendaciones
 
   const ParcelCondition({
     required this.hasVegetation,
@@ -20,23 +20,9 @@ class ParcelCondition {
 }
 
 class ImageAnalyzer {
-  static const _umbral = 0.55;
-
-  static const _vegetacion = {
-    'grass', 'plant', 'tree', 'vegetation', 'leaf', 'nature',
-    'crop', 'field', 'agriculture', 'flower', 'shrub', 'herb',
-    'jungle', 'forest', 'farmland', 'garden',
-  };
-
-  static const _humedo = {
-    'water', 'mud', 'swamp', 'rain', 'moist', 'wet', 'puddle',
-    'pond', 'stream', 'river', 'lake', 'flood', 'moisture', 'irrigation',
-  };
-
-  static const _seco = {
-    'desert', 'sand', 'dry', 'rock', 'stone', 'arid', 'dust',
-    'drought', 'cracked', 'barren', 'wasteland', 'gravel',
-  };
+  // Umbral bajo para que ML Kit retorne más etiquetas candidatas;
+  // los umbrales de clasificación se aplican manualmente abajo.
+  static const _umbral = 0.5;
 
   static Future<ParcelCondition> analyzeParcel(String imagePath) async {
     final inputImage = InputImage.fromFilePath(imagePath);
@@ -53,33 +39,61 @@ class ImageAnalyzer {
         );
       }
 
-      final nombres = labels.map((l) => l.label.toLowerCase()).toSet();
+      // Mapa label_en_minúsculas → confidence para consultas O(1)
+      final conf = <String, double>{
+        for (final l in labels) l.label.toLowerCase(): l.confidence,
+      };
 
-      final hasVegetation = nombres.any(
-        (l) => _vegetacion.any((k) => l.contains(k)),
-      );
-      final isHumedo = nombres.any(
-        (l) => _humedo.any((k) => l.contains(k)),
-      );
-      final isSeco = nombres.any(
-        (l) => _seco.any((k) => l.contains(k)),
-      );
+      double c(String key) => conf[key] ?? 0.0;
+
+      // ── hasVegetation ──────────────────────────────────────────────────
+      // Plant/Forest/Jungle requieren > 0.75; Prairie/Field requieren > 0.70
+      final hasVegetation =
+          c('plant') > 0.75 ||
+          c('forest') > 0.75 ||
+          c('jungle') > 0.75 ||
+          c('prairie') > 0.70 ||
+          c('field') > 0.70;
+
+      // ── soilType ───────────────────────────────────────────────────────
+      // Cascada: fértil → seco → húmedo
+      // Fértil: bosque/selva claros, o pradera con vegetación activa
+      final esFertil =
+          c('forest') > 0.75 ||
+          c('jungle') > 0.75 ||
+          (c('prairie') > 0.75 && hasVegetation);
+
+      // Seco: suelo árido dominante, urban/rock sin bosque, o sin vegetación
+      final esSeco =
+          c('soil') > 0.75 ||
+          !hasVegetation ||
+          // Edificios/roca/vía presentes y sin bosque/selva significativo
+          ((c('building') > 0.5 || c('rock') > 0.5 || c('road') > 0.5) &&
+              c('forest') <= 0.75 &&
+              c('jungle') <= 0.75);
+
+      // Húmedo: vegetación presente y suelo no árido dominante
+      final esHumedo = hasVegetation && c('soil') < 0.70;
 
       final String soilType;
-      if (isHumedo && !isSeco) {
-        soilType = 'humedo';
-      } else if (isSeco && !isHumedo) {
-        soilType = 'seco';
-      } else {
+      if (esFertil) {
         soilType = 'fertil';
+      } else if (esSeco) {
+        soilType = 'seco';
+      } else if (esHumedo) {
+        soilType = 'humedo';
+      } else {
+        soilType = 'seco';
       }
 
-      // scoreAdjustment refleja la calidad general de la parcela
-      int adj = 0;
-      if (hasVegetation) adj += 8;
-      if (soilType == 'fertil') adj += 5;
-      if (soilType == 'humedo') adj += 3;
-      if (soilType == 'seco') adj -= 10;
+      // ── scoreAdjustment ────────────────────────────────────────────────
+      int adj = switch (soilType) {
+        'fertil' => 20,
+        'humedo' => 10,
+        'seco'   => -15,
+        _        => 0,
+      };
+      if (hasVegetation) adj += 5;
 
       final condicion = ParcelCondition(
         hasVegetation: hasVegetation,
@@ -94,7 +108,7 @@ class ImageAnalyzer {
 
       return condicion;
     } catch (_) {
-      // Si ML Kit falla (modelo no disponible aún), se usa condición neutral
+      // Si ML Kit falla (modelo no disponible aún), condición neutral
       return ParcelCondition.sinFoto;
     } finally {
       await labeler.close();
