@@ -1,54 +1,69 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../data/models/cultivo_recomendado.dart';
 import '../../ml/image_analyzer.dart';
 
-const _meses = [
-  '', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
-];
+// Paleta del diseño HTML
+const _kPrimary = Color(0xFF012d1d);
+const _kSecondary = Color(0xFF1f6d1a);
+const _kSecondaryContainer = Color(0xFFa4f792);
+const _kBackground = Color(0xFFfcf9f4);
+const _kSurface = Color(0xFFffffff);
+const _kOnSurface = Color(0xFF1c1c19);
+const _kOnSurfaceVariant = Color(0xFF414844);
+const _kOutlineVariant = Color(0xFFc1c8c2);
+const _kOutline = Color(0xFF717973);
+const _kPrimaryFixed = Color(0xFFc1ecd4);
+const _kPrimaryContainer = Color(0xFF1b4332);
+const _kSecondaryFixed = Color(0xFFa4f792);
+const _kSecondaryFixedDim = Color(0xFF89da79);
+const _kOnSecondaryContainer = Color(0xFF267320);
+const _kTertiaryFixed = Color(0xFFffdcc1);
+const _kOnTertiaryFixedVariant = Color(0xFF653e17);
+const _kSurfaceContainer = Color(0xFFf0ede8);
+const _kSurfaceContainerLow = Color(0xFFf6f3ee);
 
-const _emojiCultivo = {
-  'Maíz': '🌽', 'maíz': '🌽', 'maiz': '🌽',
-  'Frijol': '🫘', 'frijol': '🫘',
-  'Chile': '🌶️', 'chile': '🌶️',
-  'Tomate': '🍅', 'tomate': '🍅',
-  'Quelite': '🥬', 'quelite': '🥬',
-  'Durazno': '🍑', 'durazno': '🍑',
-  'Manzana': '🍎', 'manzana': '🍎',
-  'Trigo': '🌾', 'trigo': '🌾',
-  'Café': '☕', 'cafe': '☕',
-  'Aguacate': '🥑', 'aguacate': '🥑',
-  'Calabaza': '🎃', 'calabaza': '🎃',
-  'Papa': '🥔', 'papa': '🥔',
-  'Zanahoria': '🥕', 'zanahoria': '🥕',
-  'Epazote': '🌿', 'epazote': '🌿',
-};
-
-String _emoji(String cultivo) {
-  for (final entry in _emojiCultivo.entries) {
-    if (cultivo.toLowerCase().contains(entry.key.toLowerCase())) {
-      return entry.value;
-    }
-  }
+String _emojiCultivo(String cultivo) {
+  final c = cultivo.toLowerCase();
+  if (c.contains('maíz') || c.contains('maiz')) return '🌽';
+  if (c.contains('frijol')) return '🫘';
+  if (c.contains('chile')) return '🌶️';
+  if (c.contains('tomate')) return '🍅';
+  if (c.contains('quelite')) return '🥬';
+  if (c.contains('durazno')) return '🍑';
+  if (c.contains('manzana')) return '🍎';
+  if (c.contains('trigo')) return '🌾';
+  if (c.contains('café') || c.contains('cafe')) return '☕';
+  if (c.contains('aguacate')) return '🥑';
+  if (c.contains('calabaza')) return '🎃';
+  if (c.contains('papa')) return '🥔';
+  if (c.contains('zanahoria')) return '🥕';
+  if (c.contains('epazote')) return '🌿';
   return '🌱';
 }
 
-Color _colorScore(int score) {
-  if (score >= 90) return const Color(0xFF2D6A4F);
-  if (score >= 75) return const Color(0xFF52B788);
-  if (score >= 60) return const Color(0xFFE9C46A);
-  return Colors.grey;
+String _descripcionClima(double precipitacion) {
+  if (precipitacion < 20) return 'Tiempo Seco';
+  if (precipitacion < 50) return 'Lluvia Ligera';
+  if (precipitacion < 100) return 'Lluvia Moderada';
+  return 'Lluvia Intensa';
 }
 
-String _etiquetaScore(int score) {
-  if (score >= 90) return 'Excelente';
-  if (score >= 75) return 'Bueno';
-  if (score >= 60) return 'Regular';
-  return 'Bajo';
+IconData _iconaClima(double precipitacion) {
+  if (precipitacion < 20) return Icons.wb_sunny_rounded;
+  if (precipitacion < 50) return Icons.water_drop_outlined;
+  return Icons.water_rounded;
+}
+
+List<String> _parsearNotas(String notas) {
+  if (notas.isEmpty) return [];
+  final partes = notas
+      .split(RegExp(r'[.;]+\s*'))
+      .where((s) => s.trim().length > 5)
+      .toList();
+  return partes.take(3).toList();
 }
 
 class RecomendacionScreen extends StatefulWidget {
@@ -88,53 +103,105 @@ class _RecomendacionScreenState extends State<RecomendacionScreen> {
     ));
   }
 
+  void _onGuardar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Consulta guardada en historial'),
+        backgroundColor: _kPrimary,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        action: SnackBarAction(
+          label: 'Ver',
+          textColor: _kSecondaryContainer,
+          onPressed: () => context.go('/historial'),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
     final municipio = provider.municipioSeleccionado ?? 'tu municipio';
-    final mes = DateTime.now().month;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recomendación'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.go('/camara'),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.history_rounded),
-            tooltip: 'Historial',
-            onPressed: () => context.go('/historial'),
-          ),
-        ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) context.go('/camara');
+      },
+      child: Scaffold(
+        backgroundColor: _kBackground,
+        appBar: const _LunisaAppBar(),
+        body: provider.cargandoRecomendacion
+            ? const _EstadoCargando()
+            : provider.recomendaciones.isEmpty
+                ? _SinDatos(municipio: municipio)
+                : _Contenido(provider: provider, onGuardar: _onGuardar),
       ),
-      body: provider.cargandoRecomendacion
-          ? _EstadoCargando()
-          : provider.recomendaciones.isEmpty
-              ? _SinDatos(municipio: municipio)
-              : _ContenidoRecomendacion(
-                  municipio: municipio,
-                  mes: mes,
-                  recomendaciones: provider.recomendaciones,
-                  clima: provider.climaActual,
-                  condicion: provider.condicionParcela,
-                ),
+    );
+  }
+}
+
+class _LunisaAppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _LunisaAppBar();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(57);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: _kSurface,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(height: 1, color: Colors.grey.shade200),
+      ),
+      leading: IconButton(
+        icon: const Icon(Icons.menu_rounded, color: _kOnSurfaceVariant),
+        onPressed: () {},
+      ),
+      title: const Text(
+        'Lu nisa',
+        style: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w900,
+          color: _kPrimary,
+          letterSpacing: -0.3,
+        ),
+      ),
+      centerTitle: true,
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: CircleAvatar(
+            radius: 17,
+            backgroundColor: _kOutlineVariant,
+            child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+          ),
+        ),
+      ],
     );
   }
 }
 
 class _EstadoCargando extends StatelessWidget {
+  const _EstadoCargando();
+
   @override
   Widget build(BuildContext context) {
     return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(color: AppTheme.verde),
+          CircularProgressIndicator(color: _kSecondary),
           SizedBox(height: 20),
-          Text('Consultando datos del cultivo...',
-              style: TextStyle(fontSize: 16, color: AppTheme.textoSecundario)),
+          Text(
+            'Consultando datos del cultivo...',
+            style: TextStyle(fontSize: 16, color: _kOnSurfaceVariant),
+          ),
         ],
       ),
     );
@@ -158,23 +225,31 @@ class _SinDatos extends StatelessWidget {
             Text(
               'Sin datos para $municipio',
               style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textoPrincipal),
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: _kOnSurface,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             const Text(
               'No se encontraron recomendaciones para este mes.',
-              style:
-                  TextStyle(fontSize: 14, color: AppTheme.textoSecundario),
+              style: TextStyle(fontSize: 14, color: _kOnSurfaceVariant),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
-            ElevatedButton.icon(
+            FilledButton.icon(
               onPressed: () => context.go('/municipio'),
+              style: FilledButton.styleFrom(
+                backgroundColor: _kPrimary,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(200, 56),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(50)),
+              ),
               icon: const Icon(Icons.refresh_rounded),
-              label: const Text('Cambiar municipio'),
+              label: const Text('Cambiar municipio',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
             ),
           ],
         ),
@@ -183,181 +258,273 @@ class _SinDatos extends StatelessWidget {
   }
 }
 
-class _ContenidoRecomendacion extends StatelessWidget {
-  final String municipio;
-  final int mes;
-  final List<CultivoRecomendado> recomendaciones;
-  final ClimaMes? clima;
-  final ParcelCondition? condicion;
+class _Contenido extends StatelessWidget {
+  final AppProvider provider;
+  final VoidCallback onGuardar;
 
-  const _ContenidoRecomendacion({
-    required this.municipio,
-    required this.mes,
-    required this.recomendaciones,
-    required this.clima,
-    required this.condicion,
-  });
+  const _Contenido({required this.provider, required this.onGuardar});
 
   @override
   Widget build(BuildContext context) {
+    final cultivo = provider.recomendaciones.first;
+    final clima = provider.climaActual;
+    final condicion = provider.condicionParcela;
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _EncabezadoMunicipio(municipio: municipio, mes: mes),
-          if (condicion != null) ...[
-            const SizedBox(height: 10),
-            _BadgeSuelo(condicion: condicion!),
-          ],
-          if (clima != null) ...[
-            const SizedBox(height: 12),
-            _TarjetaClima(clima: clima!),
-          ],
-          const SizedBox(height: 20),
+          // Header
           const Text(
-            'Cultivos recomendados',
+            'Análisis Completado',
             style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textoPrincipal),
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+              color: _kOnSurface,
+            ),
           ),
-          const SizedBox(height: 10),
-          ...recomendaciones.asMap().entries.map(
-                (e) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: _TarjetaCultivo(
-                    posicion: e.key + 1,
-                    cultivo: e.value,
-                  ),
-                ),
-              ),
-          const SizedBox(height: 8),
-          _BotonesAccion(),
+          const SizedBox(height: 4),
+          Text(
+            'Basado en las condiciones de tu parcela en ${provider.municipioSeleccionado ?? ''}.',
+            style: const TextStyle(fontSize: 14, color: _kOnSurfaceVariant),
+          ),
+          const SizedBox(height: 20),
+
+          _TarjetaPrincipal(cultivo: cultivo, condicion: condicion),
+          const SizedBox(height: 16),
+
+          _BotonesAccion(onGuardar: onGuardar),
+          const SizedBox(height: 20),
+
+          _BentoGrid(clima: clima, condicion: condicion),
+          const SizedBox(height: 20),
+
+          _RecomendacionesPracticas(notas: cultivo.notas),
         ],
       ),
     );
   }
 }
 
-class _EncabezadoMunicipio extends StatelessWidget {
-  final String municipio;
-  final int mes;
+class _TarjetaPrincipal extends StatelessWidget {
+  final CultivoRecomendado cultivo;
+  final ParcelCondition? condicion;
 
-  const _EncabezadoMunicipio(
-      {required this.municipio, required this.mes});
+  const _TarjetaPrincipal({required this.cultivo, required this.condicion});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: AppTheme.verde,
-        borderRadius: BorderRadius.circular(14),
+        color: _kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _kOutlineVariant, width: 1.5),
+        boxShadow: const [
+          BoxShadow(color: Color(0x0D000000), blurRadius: 8, offset: Offset(0, 2)),
+        ],
       ),
-      child: Row(
+      clipBehavior: Clip.antiAlias,
+      child: Column(
         children: [
-          const Icon(Icons.place_rounded, color: Colors.white70, size: 20),
-          const SizedBox(width: 8),
-          Expanded(
+          // Hero área con gradiente + emoji
+          Container(
+            height: 130,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF1b4332), Color(0xFF2D6A4F), Color(0xFF52B788)],
+              ),
+            ),
+            child: Center(
+              child: Text(
+                _emojiCultivo(cultivo.cultivo),
+                style: const TextStyle(fontSize: 72),
+              ),
+            ),
+          ),
+
+          Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(municipio,
-                    style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white)),
-                Text(
-                  _meses[mes],
-                  style: const TextStyle(fontSize: 13, color: Colors.white70),
+                // Card cultivo recomendado
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: _kPrimary,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '🌱 CULTIVO RECOMENDADO',
+                        style: TextStyle(
+                          fontSize: 11,
+                          letterSpacing: 1.2,
+                          color: _kPrimaryFixed,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          const Icon(Icons.eco_rounded,
+                              color: _kSecondaryFixed, size: 36),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Text(
+                              cultivo.cultivo,
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
+
+                const SizedBox(height: 12),
+
+                // Badge fecha de siembra
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: _kSecondaryContainer,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _kSecondaryFixedDim, width: 1.5),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.calendar_month_rounded,
+                            color: _kSecondary, size: 26),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              '📅 Mejor fecha de siembra',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: _kOnSecondaryContainer,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              cultivo.mesesSiembra,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: _kPrimaryContainer,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                if (condicion != null) ...[
+                  const SizedBox(height: 12),
+                  _BadgeParcela(condicion: condicion!),
+                ],
               ],
             ),
           ),
-          const Text('🌽', style: TextStyle(fontSize: 30)),
         ],
       ),
     );
   }
 }
 
-class _BadgeSuelo extends StatelessWidget {
+class _BadgeParcela extends StatelessWidget {
   final ParcelCondition condicion;
-  const _BadgeSuelo({required this.condicion});
-
-  static const _config = {
-    'humedo': (
-      label: 'Suelo húmedo',
-      emoji: '🌧️',
-      color: Color(0xFF1565C0),
-      bg: Color(0xFFE3F2FD),
-    ),
-    'seco': (
-      label: 'Suelo seco',
-      emoji: '☀️',
-      color: Color(0xFFE65100),
-      bg: Color(0xFFFFF3E0),
-    ),
-    'fertil': (
-      label: 'Tierra fértil',
-      emoji: '🌱',
-      color: Color(0xFF2D6A4F),
-      bg: Color(0xFFE8F5E9),
-    ),
-  };
+  const _BadgeParcela({required this.condicion});
 
   @override
   Widget build(BuildContext context) {
-    final cfg = _config[condicion.soilType] ?? _config['fertil']!;
+    final (label, color, bg, icon) = switch (condicion.soilType) {
+      'humedo' => (
+          'Suelo húmedo 🌧️',
+          const Color(0xFF1565C0),
+          const Color(0xFFE3F2FD),
+          Icons.water_drop_rounded,
+        ),
+      'seco' => (
+          'Suelo seco ☀️',
+          const Color(0xFFE65100),
+          const Color(0xFFFFF3E0),
+          Icons.wb_sunny_rounded,
+        ),
+      _ => (
+          'Tierra fértil 🌱',
+          _kSecondary,
+          const Color(0xFFE8F5E9),
+          Icons.eco_rounded,
+        ),
+    };
 
-    return Row(
+    return Wrap(
+      spacing: 8,
       children: [
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: cfg.bg,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: cfg.color.withAlpha(80)),
+            color: bg,
+            borderRadius: BorderRadius.circular(50),
+            border: Border.all(color: color.withAlpha(77)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(cfg.emoji, style: const TextStyle(fontSize: 16)),
+              Icon(icon, size: 16, color: color),
               const SizedBox(width: 6),
               Text(
-                cfg.label,
+                label,
                 style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: cfg.color),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: color,
+                ),
               ),
             ],
           ),
         ),
-        const SizedBox(width: 8),
         if (condicion.hasVegetation)
           Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
               color: const Color(0xFFE8F5E9),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                  color: AppTheme.verdeClaro.withAlpha(120)),
+              borderRadius: BorderRadius.circular(50),
+              border: Border.all(color: _kSecondary.withAlpha(77)),
             ),
-            child: const Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('🌿', style: TextStyle(fontSize: 14)),
-                SizedBox(width: 5),
-                Text('Tierra activa',
-                    style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.verde)),
-              ],
+            child: const Text(
+              '🌿 Tierra activa',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: _kSecondary,
+              ),
             ),
           ),
       ],
@@ -365,283 +532,435 @@ class _BadgeSuelo extends StatelessWidget {
   }
 }
 
-class _TarjetaClima extends StatelessWidget {
-  final ClimaMes clima;
-  const _TarjetaClima({required this.clima});
+class _BotonesAccion extends StatelessWidget {
+  final VoidCallback onGuardar;
+  const _BotonesAccion({required this.onGuardar});
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.wb_sunny_rounded,
-                    color: AppTheme.maizOscuro, size: 18),
-                SizedBox(width: 6),
-                Text('Clima este mes',
-                    style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textoPrincipal)),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _DatoClima(
-                    icono: '🌡️',
-                    valor: '${clima.tempMedia.toStringAsFixed(1)}°C',
-                    etiqueta: 'Temp. media'),
-                _DatoClima(
-                    icono: '🌧️',
-                    valor: '${clima.precipitacion.toStringAsFixed(1)} mm',
-                    etiqueta: 'Lluvia'),
-                _DatoClima(
-                    icono: '💧',
-                    valor: '${clima.humedad.toStringAsFixed(0)}%',
-                    etiqueta: 'Humedad'),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _DatoClima extends StatelessWidget {
-  final String icono;
-  final String valor;
-  final String etiqueta;
-
-  const _DatoClima(
-      {required this.icono, required this.valor, required this.etiqueta});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Text(icono, style: const TextStyle(fontSize: 22)),
-        const SizedBox(height: 2),
-        Text(valor,
-            style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: AppTheme.textoPrincipal)),
-        Text(etiqueta,
-            style: const TextStyle(
-                fontSize: 11, color: AppTheme.textoSecundario)),
+        Expanded(
+          child: FilledButton.icon(
+            onPressed: onGuardar,
+            style: FilledButton.styleFrom(
+              backgroundColor: _kPrimary,
+              foregroundColor: Colors.white,
+              minimumSize: const Size(0, 56),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
+            ),
+            icon: const Icon(Icons.save_rounded),
+            label: const Text('Guardar',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: OutlinedButton.icon(
+            onPressed: () => context.go('/municipio'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: _kOnSurface,
+              side: const BorderSide(color: _kOutline, width: 2),
+              minimumSize: const Size(0, 56),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(50)),
+            ),
+            icon: const Icon(Icons.refresh_rounded),
+            label: const Text('Nueva consulta',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+          ),
+        ),
       ],
     );
   }
 }
 
-class _TarjetaCultivo extends StatelessWidget {
-  final int posicion;
-  final CultivoRecomendado cultivo;
+class _BentoGrid extends StatelessWidget {
+  final ClimaMes? clima;
+  final ParcelCondition? condicion;
 
-  const _TarjetaCultivo(
-      {required this.posicion, required this.cultivo});
+  const _BentoGrid({required this.clima, required this.condicion});
 
   @override
   Widget build(BuildContext context) {
-    final color = _colorScore(cultivo.score);
-
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Encabezado: posición + emoji + nombre + score
-            Row(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    color: posicion == 1 ? AppTheme.maiz : Colors.grey.shade200,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Text('$posicion',
-                        style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: posicion == 1
-                                ? AppTheme.verde
-                                : AppTheme.textoSecundario)),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(_emoji(cultivo.cultivo),
-                    style: const TextStyle(fontSize: 26)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    cultivo.cultivo,
-                    style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textoPrincipal),
-                  ),
-                ),
-                // Badge de score
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: color.withAlpha(30),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: color, width: 1),
-                  ),
-                  child: Text(
-                    '${cultivo.score} · ${_etiquetaScore(cultivo.score)}',
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: color),
-                  ),
-                ),
-              ],
-            ),
-
-            // Barra de score
-            const SizedBox(height: 10),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: cultivo.score / 100,
-                minHeight: 5,
-                backgroundColor: Colors.grey.shade200,
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-            // Siembra y cosecha
-            Row(
-              children: [
-                Expanded(
-                  child: _InfoFecha(
-                    icono: Icons.agriculture_rounded,
-                    etiqueta: 'Siembra',
-                    valor: cultivo.mesesSiembra,
-                    color: AppTheme.verde,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: _InfoFecha(
-                    icono: Icons.grass_rounded,
-                    etiqueta: 'Cosecha',
-                    valor: cultivo.mesesCosecha,
-                    color: AppTheme.tierra,
-                  ),
-                ),
-              ],
-            ),
-
-            if (cultivo.notas.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              const Divider(height: 1),
-              const SizedBox(height: 10),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Icon(Icons.info_outline_rounded,
-                      size: 16, color: AppTheme.textoSecundario),
-                  const SizedBox(width: 6),
-                  Expanded(
-                    child: Text(
-                      cultivo.notas,
-                      style: const TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.textoSecundario,
-                          height: 1.4),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ],
-        ),
-      ),
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _TarjetaCondicionSuelo(clima: clima, condicion: condicion)),
+        const SizedBox(width: 12),
+        Expanded(child: _TarjetaClima(clima: clima)),
+      ],
     );
   }
 }
 
-class _InfoFecha extends StatelessWidget {
-  final IconData icono;
-  final String etiqueta;
-  final String valor;
-  final Color color;
+class _TarjetaCondicionSuelo extends StatelessWidget {
+  final ClimaMes? clima;
+  final ParcelCondition? condicion;
 
-  const _InfoFecha({
-    required this.icono,
-    required this.etiqueta,
-    required this.valor,
-    required this.color,
-  });
+  const _TarjetaCondicionSuelo(
+      {required this.clima, required this.condicion});
+
+  String _phEstimado(String? soilType) => switch (soilType) {
+        'humedo' => '5.5 - 6.5',
+        'seco' => '7.0 - 8.0',
+        _ => '6.5 - 7.0',
+      };
+
+  String _humedadEtiqueta(double h) {
+    if (h > 70) return 'Alta';
+    if (h > 40) return 'Óptima';
+    return 'Baja';
+  }
+
+  String _nitrogenoEtiqueta(String? soilType) => switch (soilType) {
+        'fertil' => 'Alto',
+        'humedo' => 'Medio',
+        _ => 'Bajo',
+      };
 
   @override
   Widget build(BuildContext context) {
+    final soilType = condicion?.soilType;
+    final humedad = clima?.humedad ?? 60;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withAlpha(20),
-        borderRadius: BorderRadius.circular(8),
+        color: _kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _kOutlineVariant, width: 1.5),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icono, size: 14, color: color),
-              const SizedBox(width: 4),
-              Text(etiqueta,
+              const Icon(Icons.terrain_rounded,
+                  color: _kOnTertiaryFixedVariant, size: 18),
+              const SizedBox(width: 6),
+              const Flexible(
+                child: Text(
+                  'Condiciones del Suelo',
                   style: TextStyle(
-                      fontSize: 11,
-                      color: color,
-                      fontWeight: FontWeight.w600)),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _kOnSurface,
+                  ),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 2),
-          Text(valor,
-              style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textoPrincipal)),
+          Divider(height: 16, color: Colors.grey.shade200),
+          _FilaInfo(
+            icon: Icons.science_rounded,
+            label: 'pH Est.',
+            valor: _phEstimado(soilType),
+            colorValor: _kOnSurface,
+            bgValor: _kSurfaceContainer,
+          ),
+          const SizedBox(height: 8),
+          _FilaInfo(
+            icon: Icons.water_drop_rounded,
+            label: 'Humedad',
+            valor: _humedadEtiqueta(humedad),
+            colorValor: _kOnSecondaryContainer,
+            bgValor: _kSecondaryFixed,
+          ),
+          const SizedBox(height: 8),
+          _FilaInfo(
+            icon: Icons.grass_rounded,
+            label: 'Nitrógeno',
+            valor: _nitrogenoEtiqueta(soilType),
+            colorValor: _kOnTertiaryFixedVariant,
+            bgValor: const Color(0xFFf5bb89),
+          ),
         ],
       ),
     );
   }
 }
 
-class _BotonesAccion extends StatelessWidget {
+class _FilaInfo extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String valor;
+  final Color colorValor;
+  final Color bgValor;
+
+  const _FilaInfo({
+    required this.icon,
+    required this.label,
+    required this.valor,
+    required this.colorValor,
+    required this.bgValor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 15, color: _kOnSurfaceVariant),
+        const SizedBox(width: 5),
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(fontSize: 12, color: _kOnSurfaceVariant),
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+          decoration: BoxDecoration(
+            color: bgValor,
+            borderRadius: BorderRadius.circular(50),
+          ),
+          child: Text(
+            valor,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: colorValor,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TarjetaClima extends StatelessWidget {
+  final ClimaMes? clima;
+  const _TarjetaClima({required this.clima});
+
+  @override
+  Widget build(BuildContext context) {
+    final precipitacion = clima?.precipitacion ?? 0;
+    final tempMedia = clima?.tempMedia ?? 0;
+    final humedad = clima?.humedad ?? 0;
+    final descripcion = _descripcionClima(precipitacion);
+    final iconaLluvia = _iconaClima(precipitacion);
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: _kSurface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: _kOutlineVariant, width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.cloud_rounded, color: _kSecondary, size: 18),
+              SizedBox(width: 6),
+              Text(
+                'Clima Esperado',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: _kOnSurface,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                '${tempMedia.toStringAsFixed(0)}°',
+                style: const TextStyle(
+                  fontSize: 42,
+                  fontWeight: FontWeight.w700,
+                  color: _kOnSurface,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      descripcion,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: _kPrimary,
+                      ),
+                    ),
+                    Text(
+                      '${precipitacion.toStringAsFixed(0)} mm · ${humedad.toStringAsFixed(0)}%',
+                      style: const TextStyle(
+                          fontSize: 11, color: _kOnSurfaceVariant),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+            decoration: BoxDecoration(
+              color: _kSurfaceContainerLow,
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.shade200),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _DiaClima(dia: 'Lun', icon: iconaLluvia, color: _kSecondary),
+                _DiaClima(
+                    dia: 'Mar',
+                    icon: Icons.cloud_rounded,
+                    color: _kOnSurfaceVariant),
+                _DiaClima(dia: 'Mié', icon: iconaLluvia, color: _kSecondary),
+                _DiaClima(
+                    dia: 'Jue',
+                    icon: Icons.wb_sunny_rounded,
+                    color: const Color(0xFFE65100)),
+                _DiaClima(
+                    dia: 'Vie',
+                    icon: Icons.wb_sunny_rounded,
+                    color: const Color(0xFFE65100)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DiaClima extends StatelessWidget {
+  final String dia;
+  final IconData icon;
+  final Color color;
+
+  const _DiaClima(
+      {required this.dia, required this.icon, required this.color});
+
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        OutlinedButton.icon(
-          onPressed: () => context.go('/camara'),
-          icon: const Icon(Icons.camera_alt_rounded),
-          label: const Text('Nueva consulta'),
+        Text(dia,
+            style: const TextStyle(fontSize: 10, color: _kOnSurfaceVariant)),
+        const SizedBox(height: 3),
+        Icon(icon, size: 16, color: color),
+      ],
+    );
+  }
+}
+
+class _RecomendacionesPracticas extends StatelessWidget {
+  final String notas;
+  const _RecomendacionesPracticas({required this.notas});
+
+  static const _iconsCfg = [
+    (
+      icon: Icons.agriculture_rounded,
+      bg: _kTertiaryFixed,
+      color: _kOnTertiaryFixedVariant,
+      titulo: 'Preparación de Tierra',
+    ),
+    (
+      icon: Icons.water_drop_rounded,
+      bg: _kPrimaryFixed,
+      color: Color(0xFF274e3d),
+      titulo: 'Riego y Humedad',
+    ),
+    (
+      icon: Icons.pest_control_rounded,
+      bg: Color(0xFFe5e2dd),
+      color: _kOnSurfaceVariant,
+      titulo: 'Control de Plagas',
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final items = _parsearNotas(notas);
+    if (items.isEmpty && notas.isEmpty) return const SizedBox.shrink();
+
+    final displayItems = items.isNotEmpty ? items : [notas];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Recomendaciones Prácticas',
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w600,
+            color: _kOnSurface,
+          ),
         ),
-        const SizedBox(height: 10),
-        TextButton.icon(
-          onPressed: () => context.go('/historial'),
-          icon: const Icon(Icons.history_rounded),
-          label: const Text('Ver historial'),
-          style: TextButton.styleFrom(
-              foregroundColor: AppTheme.textoSecundario),
-        ),
+        const SizedBox(height: 12),
+        ...displayItems.asMap().entries.map((entry) {
+          final i = entry.key % _iconsCfg.length;
+          final cfg = _iconsCfg[i];
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10),
+            child: Container(
+              constraints: const BoxConstraints(minHeight: 80),
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: _kSurface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: _kOutlineVariant, width: 1.5),
+                boxShadow: const [
+                  BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 6,
+                      offset: Offset(0, 1)),
+                ],
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: cfg.bg,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(cfg.icon, color: cfg.color, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          cfg.titulo,
+                          style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            color: _kOnSurface,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          entry.value.trim(),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: _kOnSurfaceVariant,
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
       ],
     );
   }
