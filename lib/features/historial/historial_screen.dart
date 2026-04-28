@@ -77,18 +77,24 @@ class _HistorialScreenState extends State<HistorialScreen> {
         ? historial.toList()
         : historial.where((c) => c.cultivo == _filtroActivo).toList();
 
-    return Scaffold(
-      backgroundColor: _kBackground,
-      appBar: const _LunisaAppBar(),
-      bottomNavigationBar: const LunisaBottomNav(),
-      body: historial.isEmpty
-          ? const _HistorialVacio()
-          : _ContenidoHistorial(
-              consultas: consultasFiltradas,
-              cultivosUnicos: cultivosUnicos,
-              filtroActivo: _filtroActivo,
-              onFiltroChanged: (f) => setState(() => _filtroActivo = f),
-            ),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (!didPop) context.go('/inicio');
+      },
+      child: Scaffold(
+        backgroundColor: _kBackground,
+        appBar: const _LunisaAppBar(),
+        bottomNavigationBar: const LunisaBottomNav(),
+        body: historial.isEmpty
+            ? const _HistorialVacio()
+            : _ContenidoHistorial(
+                consultas: consultasFiltradas,
+                cultivosUnicos: cultivosUnicos,
+                filtroActivo: _filtroActivo,
+                onFiltroChanged: (f) => setState(() => _filtroActivo = f),
+              ),
+      ),
     );
   }
 }
