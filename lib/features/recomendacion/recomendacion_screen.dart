@@ -79,7 +79,12 @@ class _RecomendacionScreenState extends State<RecomendacionScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _cargarDatos());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // En modo historial los datos ya se están cargando desde el provider
+      if (!context.read<AppProvider>().modoHistorial) {
+        _cargarDatos();
+      }
+    });
   }
 
   Future<void> _cargarDatos() async {
@@ -124,26 +129,42 @@ class _RecomendacionScreenState extends State<RecomendacionScreen> {
     final provider = context.watch<AppProvider>();
     final municipio = provider.municipioSeleccionado ?? 'tu municipio';
 
+    final modoHistorial = provider.modoHistorial;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) context.go('/camara');
+        if (!didPop) {
+          context.go(modoHistorial ? '/historial' : '/camara');
+        }
       },
       child: Scaffold(
         backgroundColor: _kBackground,
-        appBar: const _LunisaAppBar(),
+        appBar: _LunisaAppBar(
+          modoHistorial: modoHistorial,
+          onBack: () => context.go(modoHistorial ? '/historial' : '/camara'),
+        ),
         body: provider.cargandoRecomendacion
             ? const _EstadoCargando()
             : provider.recomendaciones.isEmpty
                 ? _SinDatos(municipio: municipio)
-                : _Contenido(provider: provider, onGuardar: _onGuardar),
+                : _Contenido(
+                    provider: provider,
+                    onGuardar: modoHistorial ? null : _onGuardar,
+                  ),
       ),
     );
   }
 }
 
 class _LunisaAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _LunisaAppBar();
+  final bool modoHistorial;
+  final VoidCallback onBack;
+
+  const _LunisaAppBar({
+    required this.modoHistorial,
+    required this.onBack,
+  });
 
   @override
   Size get preferredSize => const Size.fromHeight(57);
@@ -160,12 +181,15 @@ class _LunisaAppBar extends StatelessWidget implements PreferredSizeWidget {
         child: Divider(height: 1, color: Colors.grey.shade200),
       ),
       leading: IconButton(
-        icon: const Icon(Icons.menu_rounded, color: _kOnSurfaceVariant),
-        onPressed: () {},
+        icon: Icon(
+          modoHistorial ? Icons.arrow_back_rounded : Icons.menu_rounded,
+          color: _kOnSurfaceVariant,
+        ),
+        onPressed: modoHistorial ? onBack : () {},
       ),
-      title: const Text(
-        'Lu nisa',
-        style: TextStyle(
+      title: Text(
+        modoHistorial ? 'Análisis guardado' : 'Lu nisa',
+        style: const TextStyle(
           fontSize: 22,
           fontWeight: FontWeight.w900,
           color: _kPrimary,
@@ -179,7 +203,8 @@ class _LunisaAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: CircleAvatar(
             radius: 17,
             backgroundColor: _kOutlineVariant,
-            child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+            child: const Icon(Icons.person_rounded,
+                color: Colors.white, size: 18),
           ),
         ),
       ],
@@ -260,7 +285,7 @@ class _SinDatos extends StatelessWidget {
 
 class _Contenido extends StatelessWidget {
   final AppProvider provider;
-  final VoidCallback onGuardar;
+  final VoidCallback? onGuardar;
 
   const _Contenido({required this.provider, required this.onGuardar});
 
@@ -533,11 +558,32 @@ class _BadgeParcela extends StatelessWidget {
 }
 
 class _BotonesAccion extends StatelessWidget {
-  final VoidCallback onGuardar;
+  final VoidCallback? onGuardar;
   const _BotonesAccion({required this.onGuardar});
 
   @override
   Widget build(BuildContext context) {
+    // Modo historial: solo botón "Volver al historial"
+    if (onGuardar == null) {
+      return SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          onPressed: () => context.go('/historial'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: _kPrimary,
+            side: const BorderSide(color: _kPrimary, width: 2),
+            minimumSize: const Size(0, 56),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(50)),
+          ),
+          icon: const Icon(Icons.history_rounded),
+          label: const Text('Volver al historial',
+              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+        ),
+      );
+    }
+
+    // Modo análisis normal: Guardar + Nueva consulta
     return Row(
       children: [
         Expanded(

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'core/theme/app_theme.dart';
 import 'core/providers/app_provider.dart';
 import 'features/onboarding/onboarding_screen.dart';
+import 'features/inicio/inicio_screen.dart';
 import 'features/municipio/municipio_screen.dart';
 import 'features/camara/camara_screen.dart';
 import 'features/recomendacion/recomendacion_screen.dart';
@@ -15,6 +16,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/inicio',
+      builder: (context, state) => const InicioScreen(),
     ),
     GoRoute(
       path: '/municipio',

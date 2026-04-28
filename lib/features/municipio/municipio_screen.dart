@@ -39,7 +39,8 @@ class _MunicipioScreenState extends State<MunicipioScreen> {
 
   void _seleccionar(BuildContext context, String municipio, String distrito) {
     context.read<AppProvider>().seleccionarMunicipio(municipio, distrito);
-    context.go('/camara');
+    final from = GoRouterState.of(context).uri.queryParameters['from'];
+    context.go(from == 'inicio' ? '/inicio' : '/camara');
   }
 
   @override
@@ -47,13 +48,14 @@ class _MunicipioScreenState extends State<MunicipioScreen> {
     final filtrado = _filtrado;
     final totalVisible =
         filtrado.values.fold(0, (sum, lista) => sum + lista.length);
+    final from = GoRouterState.of(context).uri.queryParameters['from'];
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Selecciona tu municipio'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => context.go('/'),
+          onPressed: () => context.go(from == 'inicio' ? '/inicio' : '/'),
         ),
       ),
       body: Column(

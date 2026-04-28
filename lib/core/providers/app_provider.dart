@@ -25,7 +25,9 @@ class AppProvider extends ChangeNotifier {
   ParcelCondition? _condicionParcela;
   List<CultivoRecomendado> _recomendaciones = [];
   ClimaMes? _climaActual;
+  bool _climaCargando = false;
   bool _cargandoRecomendacion = false;
+  bool _modoHistorial = false;
   final List<Consulta> _historial = [];
 
   String? get municipioSeleccionado => _municipioSeleccionado;
@@ -34,7 +36,9 @@ class AppProvider extends ChangeNotifier {
   List<CultivoRecomendado> get recomendaciones =>
       List.unmodifiable(_recomendaciones);
   ClimaMes? get climaActual => _climaActual;
+  bool get climaCargando => _climaCargando;
   bool get cargandoRecomendacion => _cargandoRecomendacion;
+  bool get modoHistorial => _modoHistorial;
   List<Consulta> get historial => List.unmodifiable(_historial);
 
   AppProvider() {
@@ -46,7 +50,36 @@ class AppProvider extends ChangeNotifier {
     _distritoSeleccionado = distrito;
     _recomendaciones = [];
     _climaActual = null;
+    _climaCargando = true;
     _condicionParcela = null;
+    _modoHistorial = false;
+    notifyListeners();
+    cargarClimaMes(municipio);
+  }
+
+  Future<void> verConsultaHistorial(Consulta consulta) async {
+    _modoHistorial = true;
+    _municipioSeleccionado = consulta.municipio;
+    _condicionParcela = null;
+    _recomendaciones = [];
+    _cargandoRecomendacion = true;
+    notifyListeners();
+
+    await _repo.cargar();
+    final mes = consulta.fechaConsulta.month;
+    _recomendaciones = _repo.getRecomendaciones(consulta.municipio, mes);
+    _climaActual = _repo.getClima(consulta.municipio, mes);
+    _cargandoRecomendacion = false;
+    notifyListeners();
+  }
+
+  Future<void> cargarClimaMes(String municipio) async {
+    _climaCargando = true;
+    notifyListeners();
+    await _repo.cargar();
+    final mes = DateTime.now().month;
+    _climaActual = _repo.getClima(municipio, mes);
+    _climaCargando = false;
     notifyListeners();
   }
 
@@ -85,6 +118,8 @@ class AppProvider extends ChangeNotifier {
     _condicionParcela = null;
     _recomendaciones = [];
     _climaActual = null;
+    _climaCargando = false;
+    _modoHistorial = false;
     notifyListeners();
   }
 }

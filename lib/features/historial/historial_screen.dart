@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/app_provider.dart';
+import '../../core/widgets/bottom_nav.dart';
 
 // Paleta del diseño HTML
 const _kPrimary = Color(0xFF012d1d);
@@ -76,23 +77,18 @@ class _HistorialScreenState extends State<HistorialScreen> {
         ? historial.toList()
         : historial.where((c) => c.cultivo == _filtroActivo).toList();
 
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop) context.go('/recomendacion');
-      },
-      child: Scaffold(
-        backgroundColor: _kBackground,
-        appBar: const _LunisaAppBar(),
-        body: historial.isEmpty
-            ? const _HistorialVacio()
-            : _ContenidoHistorial(
-                consultas: consultasFiltradas,
-                cultivosUnicos: cultivosUnicos,
-                filtroActivo: _filtroActivo,
-                onFiltroChanged: (f) => setState(() => _filtroActivo = f),
-              ),
-      ),
+    return Scaffold(
+      backgroundColor: _kBackground,
+      appBar: const _LunisaAppBar(),
+      bottomNavigationBar: const LunisaBottomNav(),
+      body: historial.isEmpty
+          ? const _HistorialVacio()
+          : _ContenidoHistorial(
+              consultas: consultasFiltradas,
+              cultivosUnicos: cultivosUnicos,
+              filtroActivo: _filtroActivo,
+              onFiltroChanged: (f) => setState(() => _filtroActivo = f),
+            ),
     );
   }
 }
@@ -359,80 +355,93 @@ class _TarjetaConsulta extends StatelessWidget {
   final Consulta consulta;
   const _TarjetaConsulta({required this.consulta});
 
+  void _verDetalle(BuildContext context) {
+    context.read<AppProvider>().verConsultaHistorial(consulta);
+    context.go('/recomendacion');
+  }
+
   @override
   Widget build(BuildContext context) {
     final bg = _bgIconCultivo(consulta.cultivo);
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: _kSurface,
+    return Material(
+      color: _kSurface,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: _kOutlineVariant, width: 1.5),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-            child: Center(
-              child: Text(
-                _emojiCultivo(consulta.cultivo),
-                style: const TextStyle(fontSize: 24),
-              ),
-            ),
+        onTap: () => _verDetalle(context),
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: _kOutlineVariant, width: 1.5),
           ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  consulta.cultivo,
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: _kOnSurface,
+          child: Row(
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+                child: Center(
+                  child: Text(
+                    _emojiCultivo(consulta.cultivo),
+                    style: const TextStyle(fontSize: 24),
                   ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 5),
-                Row(
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.calendar_today_rounded,
-                        size: 13, color: _kOnSurfaceVariant),
-                    const SizedBox(width: 4),
                     Text(
-                      _formatearFecha(consulta.fechaConsulta),
+                      consulta.cultivo,
                       style: const TextStyle(
-                          fontSize: 12, color: _kOnSurfaceVariant),
-                    ),
-                    const SizedBox(width: 6),
-                    const Text('•',
-                        style: TextStyle(color: _kOutlineVariant)),
-                    const SizedBox(width: 6),
-                    const Icon(Icons.location_on_rounded,
-                        size: 13, color: _kOnSurfaceVariant),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        consulta.municipio,
-                        style: const TextStyle(
-                            fontSize: 12, color: _kOnSurfaceVariant),
-                        overflow: TextOverflow.ellipsis,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: _kOnSurface,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today_rounded,
+                            size: 13, color: _kOnSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Text(
+                          _formatearFecha(consulta.fechaConsulta),
+                          style: const TextStyle(
+                              fontSize: 12, color: _kOnSurfaceVariant),
+                        ),
+                        const SizedBox(width: 6),
+                        const Text('•',
+                            style: TextStyle(color: _kOutlineVariant)),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.location_on_rounded,
+                            size: 13, color: _kOnSurfaceVariant),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            consulta.municipio,
+                            style: const TextStyle(
+                                fontSize: 12, color: _kOnSurfaceVariant),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(Icons.chevron_right_rounded,
+                  color: _kOnSurfaceVariant, size: 22),
+            ],
           ),
-          const SizedBox(width: 8),
-          const Icon(Icons.chevron_right_rounded,
-              color: _kOnSurfaceVariant, size: 22),
-        ],
+        ),
       ),
     );
   }
 }
+

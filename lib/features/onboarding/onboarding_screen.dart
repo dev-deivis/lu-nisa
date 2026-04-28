@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../core/theme/app_theme.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
@@ -8,179 +7,88 @@ class OnboardingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.verde,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const SizedBox(),
-              _CuerpoOnboarding(),
-              _BotonComenzar(
-                onTap: () => context.go('/municipio'),
-              ),
-            ],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Imagen de fondo
+          Image.asset(
+            'recursos/oaxaca-sierra-norte-forest.jpg',
+            fit: BoxFit.cover,
           ),
-        ),
+          // Degradado blanco semitransparente sobre la imagen
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Color(0x55FFFFFF), // 33% opaco arriba — más bosque visible
+                  Color(0xBBFFFFFF), // 73% en el medio
+                  Color(0xF2FFFFFF), // 95% abajo — fondo casi blanco para el botón
+                ],
+                stops: [0.0, 0.45, 1.0],
+              ),
+            ),
+          ),
+          // Contenido
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        'recursos/LogoLuNisa.png',
+                        width: 200,
+                        height: 200,
+                        fit: BoxFit.contain,
+                      ),
+                      const SizedBox(height: 16),
+                      const SizedBox(
+                        width: 280,
+                        child: Text(
+                          'Tu compañero en el campo',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF414844),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: ElevatedButton(
+                      onPressed: () => context.go('/inicio'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF012D1D),
+                        foregroundColor: Colors.white,
+                        elevation: 3,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: const Text(
+                        'Comenzar',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
-    );
-  }
-}
-
-class _CuerpoOnboarding extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Ícono principal
-        Container(
-          width: 130,
-          height: 130,
-          decoration: BoxDecoration(
-            color: Colors.white.withAlpha(30),
-            shape: BoxShape.circle,
-          ),
-          child: const Center(
-            child: Text(
-              '🌽',
-              style: TextStyle(fontSize: 72),
-            ),
-          ),
-        ),
-        const SizedBox(height: 36),
-
-        // Nombre de la app
-        const Text(
-          'Lu-nisa',
-          style: TextStyle(
-            fontSize: 52,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-            letterSpacing: 2,
-          ),
-        ),
-        const SizedBox(height: 12),
-
-        // Subtítulo en español
-        const Text(
-          'Guía agrícola de la Sierra Norte',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        const SizedBox(height: 8),
-
-        // Subtítulo en zapoteco
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.white.withAlpha(25),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: const Text(
-            '"Guendaró lu yoo neza"',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.white70,
-              fontStyle: FontStyle.italic,
-            ),
-          ),
-        ),
-        const SizedBox(height: 6),
-        const Text(
-          'Zapoteco · Sierra Norte',
-          style: TextStyle(fontSize: 12, color: Colors.white54),
-        ),
-        const SizedBox(height: 40),
-
-        // Características rápidas
-        _CaracteristicaItem(
-          icono: Icons.wifi_off_rounded,
-          texto: 'Funciona sin internet',
-        ),
-        const SizedBox(height: 12),
-        _CaracteristicaItem(
-          icono: Icons.location_city_rounded,
-          texto: '68 municipios de la Sierra',
-        ),
-        const SizedBox(height: 12),
-        _CaracteristicaItem(
-          icono: Icons.eco_rounded,
-          texto: 'Recomendaciones de cultivo',
-        ),
-      ],
-    );
-  }
-}
-
-class _CaracteristicaItem extends StatelessWidget {
-  final IconData icono;
-  final String texto;
-
-  const _CaracteristicaItem({required this.icono, required this.texto});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icono, color: AppTheme.maiz, size: 22),
-        const SizedBox(width: 10),
-        Text(
-          texto,
-          style: const TextStyle(
-            fontSize: 16,
-            color: Colors.white,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _BotonComenzar extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _BotonComenzar({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          width: double.infinity,
-          height: 60,
-          child: ElevatedButton(
-            onPressed: onTap,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.maiz,
-              foregroundColor: AppTheme.verde,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16)),
-              elevation: 4,
-            ),
-            child: const Text(
-              'Comenzar',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'Versión 1.0 · Oaxaca, México',
-          style: TextStyle(color: Colors.white.withAlpha(100), fontSize: 12),
-        ),
-      ],
     );
   }
 }
