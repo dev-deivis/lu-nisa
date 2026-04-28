@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
-import '../../core/widgets/bottom_nav.dart';
 import '../../ml/image_analyzer.dart';
 
 class CamaraScreen extends StatefulWidget {
@@ -89,7 +88,6 @@ class _CamaraScreenState extends State<CamaraScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const LunisaBottomNav(),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
