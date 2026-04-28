@@ -74,6 +74,20 @@ class _CamaraScreenState extends State<CamaraScreen> {
           onPressed:
               _cargando ? null : () => context.go('/municipio'),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: InkWell(
+              onTap: () => context.go('/perfil'),
+              borderRadius: BorderRadius.circular(17),
+              child: CircleAvatar(
+                radius: 17,
+                backgroundColor: Colors.grey.shade300,
+                child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+              ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: const LunisaBottomNav(),
       body: SafeArea(

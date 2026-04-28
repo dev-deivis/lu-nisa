@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/app_provider.dart';
-import '../../core/widgets/bottom_nav.dart';
 import '../../data/models/cultivo_recomendado.dart';
 
 class InicioScreen extends StatelessWidget {
@@ -72,7 +71,6 @@ class InicioScreen extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const LunisaBottomNav(),
     );
   }
 }

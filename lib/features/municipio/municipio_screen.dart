@@ -57,6 +57,20 @@ class _MunicipioScreenState extends State<MunicipioScreen> {
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.go(from == 'inicio' ? '/inicio' : '/'),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: InkWell(
+              onTap: () => context.go('/perfil'),
+              borderRadius: BorderRadius.circular(17),
+              child: CircleAvatar(
+                radius: 17,
+                backgroundColor: Colors.grey.shade300,
+                child: const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+              ),
+            ),
+          ),
+        ],
       ),
       body: Column(
         children: [

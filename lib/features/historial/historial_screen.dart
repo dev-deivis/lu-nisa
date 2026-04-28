@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/app_provider.dart';
-import '../../core/widgets/bottom_nav.dart';
 
 // Paleta del diseño HTML
 const _kPrimary = Color(0xFF012d1d);
@@ -85,7 +84,6 @@ class _HistorialScreenState extends State<HistorialScreen> {
       child: Scaffold(
         backgroundColor: _kBackground,
         appBar: const _LunisaAppBar(),
-        bottomNavigationBar: const LunisaBottomNav(),
         body: historial.isEmpty
             ? const _HistorialVacio()
             : _ContenidoHistorial(
@@ -140,11 +138,14 @@ class _LunisaAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: CircleAvatar(
-            radius: 17,
-            backgroundColor: _kOutlineVariant,
-            child:
-                const Icon(Icons.person_rounded, color: Colors.white, size: 18),
+          child: InkWell(
+            onTap: () => context.go('/perfil'),
+            borderRadius: BorderRadius.circular(17),
+            child: const CircleAvatar(
+              radius: 17,
+              backgroundColor: _kOutlineVariant,
+              child: Icon(Icons.person_rounded, color: Colors.white, size: 18),
+            ),
           ),
         ),
       ],
