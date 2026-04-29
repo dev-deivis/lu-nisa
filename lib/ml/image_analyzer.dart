@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'dart:ui' as ui;
 import 'package:flutter/foundation.dart';
 import 'package:google_mlkit_image_labeling/google_mlkit_image_labeling.dart';
 
@@ -23,6 +25,52 @@ class ImageAnalyzer {
   // Umbral bajo para que ML Kit retorne más etiquetas candidatas;
   // los umbrales de clasificación se aplican manualmente abajo.
   static const _umbral = 0.5;
+
+  // Analiza el color promedio de la imagen reducida a 8×8 px para reforzar ML Kit.
+  static Future<String?> _colorDominante(String imagePath) async {
+    try {
+      final bytes = await File(imagePath).readAsBytes();
+      final codec = await ui.instantiateImageCodec(
+        bytes,
+        targetWidth: 8,
+        targetHeight: 8,
+      );
+      final frame = await codec.getNextFrame();
+      final image = frame.image;
+      final byteData =
+          await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+      image.dispose();
+
+      if (byteData == null) return null;
+
+      int rTotal = 0, gTotal = 0, bTotal = 0, count = 0;
+      for (int i = 0; i < byteData.lengthInBytes; i += 4) {
+        rTotal += byteData.getUint8(i);
+        gTotal += byteData.getUint8(i + 1);
+        bTotal += byteData.getUint8(i + 2);
+        count++;
+      }
+      if (count == 0) return null;
+
+      final r = rTotal ~/ count;
+      final g = gTotal ~/ count;
+      final b = bTotal ~/ count;
+
+      debugPrint('[ImageAnalyzer] Color promedio: R=$r G=$g B=$b');
+
+      // Verde intenso → fértil
+      if (g > 100 && g > r * 1.2 && g > b * 1.1) return 'fertil';
+      // Café/amarillo → seco
+      if (r > 150 && g > 100 && b < 80) return 'seco';
+      // Gris oscuro/azulado → húmedo
+      if (r < 120 && g < 120 && b > 80) return 'humedo';
+
+      return null; // sin señal de color clara
+    } catch (e) {
+      debugPrint('[ImageAnalyzer] Error en análisis de color: $e');
+      return null;
+    }
+  }
 
   static Future<ParcelCondition> analyzeParcel(String imagePath) async {
     final inputImage = InputImage.fromFilePath(imagePath);
@@ -75,15 +123,28 @@ class ImageAnalyzer {
       // Húmedo: vegetación presente y suelo no árido dominante
       final esHumedo = hasVegetation && c('soil') < 0.70;
 
-      final String soilType;
+      final String mlKitSoilType;
       if (esFertil) {
-        soilType = 'fertil';
+        mlKitSoilType = 'fertil';
       } else if (esSeco) {
-        soilType = 'seco';
+        mlKitSoilType = 'seco';
       } else if (esHumedo) {
-        soilType = 'humedo';
+        mlKitSoilType = 'humedo';
       } else {
-        soilType = 'seco';
+        mlKitSoilType = 'seco'; // fallback sin señal clara
+      }
+
+      // ── Análisis de color dominante para reforzar ML Kit ───────────────
+      final colorSoilType = await _colorDominante(imagePath);
+
+      // Si ML Kit tuvo señal clara, prevalece. Si fue fallback (sin señal),
+      // el color puede corregir la clasificación.
+      final mlKitTuvoSenal = esFertil || (esSeco && c('soil') > 0.75) || esHumedo;
+      final String soilType;
+      if (colorSoilType != null && !mlKitTuvoSenal) {
+        soilType = colorSoilType;
+      } else {
+        soilType = mlKitSoilType;
       }
 
       // ── scoreAdjustment ────────────────────────────────────────────────

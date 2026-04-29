@@ -3,16 +3,24 @@ import 'package:flutter/services.dart';
 import '../models/cultivo_recomendado.dart';
 import '../../ml/image_analyzer.dart';
 
-// Keywords en notas que indican alta necesidad hídrica
+// Keywords que indican alta necesidad hídrica
 const _altaAgua = [
-  'humedad', 'húmedo', 'lluvia', 'tropical', 'agua', 'riego',
-  'precipitación', 'temporal', 'café', 'irrigación',
+  'cálido húmedo', 'calido humedo', 'húmedo', 'humedo',
+  'lluvia', 'tropical', 'riego', 'precipitación', 'irrigación',
 ];
 
-// Keywords en notas que indican baja necesidad hídrica
-const _bajaAgua = [
-  'seco', 'sequía', 'árido', 'poca agua', 'tolera', 'xerofita',
-  'resistente a', 'poca lluvia',
+// Keywords que indican tolerancia a la sequía
+const _toleraSequia = [
+  'tolerante a sequía', 'tolerante a sequia',
+  'resistente a sequía', 'resistente a sequia',
+  'sequía moderada', 'sequia moderada',
+];
+
+// Cultivos excluidos para suelo seco (requieren humedad muy alta)
+const _excluirEnSeco = [
+  'cálido húmedo', 'calido humedo', 'humedad alta',
+  'riego constante', 'suelos húmedos', 'suelos humedos',
+  'zonas altas húmedas', 'zonas altas humedas', '1845 mm',
 ];
 
 bool _prefiereMucha(CultivoRecomendado c) {
@@ -22,7 +30,12 @@ bool _prefiereMucha(CultivoRecomendado c) {
 
 bool _prefierePocha(CultivoRecomendado c) {
   final texto = '${c.notas} ${c.cultivo}'.toLowerCase();
-  return _bajaAgua.any(texto.contains);
+  return _toleraSequia.any(texto.contains);
+}
+
+bool _debeExcluirSeco(CultivoRecomendado c) {
+  final texto = '${c.notas} ${c.cultivo}'.toLowerCase();
+  return _excluirEnSeco.any(texto.contains);
 }
 
 class RecomendacionRepository {
@@ -57,7 +70,7 @@ class RecomendacionRepository {
         .toList();
   }
 
-  /// Top 3 con scores ajustados según la condición detectada en la foto
+  /// Top 3 con filtrado duro y scores ajustados según la condición del suelo
   List<CultivoRecomendado> getRecomendacionesConFoto(
     String municipio,
     int mes,
@@ -66,23 +79,34 @@ class RecomendacionRepository {
     final todos = _getTodos(municipio, mes);
     if (todos.isEmpty) return [];
 
-    final ajustados = todos.map((c) {
+    // ── Filtrado duro por tipo de suelo ──────────────────────────────────
+    final candidatos = todos.where((c) {
+      if (condicion.soilType == 'seco') return !_debeExcluirSeco(c);
+      // Para húmedo y fértil no excluimos: todos los cultivos de la Sierra
+      // Norte pueden crecer en esas condiciones
+      return true;
+    }).toList();
+
+    // ── Ajuste de score ───────────────────────────────────────────────────
+    final ajustados = candidatos.map((c) {
       int score = c.score;
 
-      // Ajuste uniforme de la foto
+      // Ajuste base de la foto
       score += condicion.scoreAdjustment;
 
       // Tierra activa (vegetación presente) → +10 a todos
       if (condicion.hasVegetation) score += 10;
 
-      // Diferencial por tipo de suelo vs. necesidad hídrica del cultivo
-      if (condicion.soilType == 'humedo') {
-        if (_prefiereMucha(c)) score += 8;
+      if (condicion.soilType == 'seco') {
+        // Cultivos tolerantes a sequía → +15; cultivos que prefieren mucha agua → -30
+        if (_prefierePocha(c)) score += 15;
+        if (_prefiereMucha(c)) score -= 30;
+      } else if (condicion.soilType == 'humedo') {
+        // Cultivos que prefieren humedad → +15; tolerantes a sequía → -5 (leve)
+        if (_prefiereMucha(c)) score += 15;
         if (_prefierePocha(c)) score -= 5;
-      } else if (condicion.soilType == 'seco') {
-        if (_prefierePocha(c)) score += 8;
-        if (_prefiereMucha(c)) score -= 5;
       }
+      // fértil: sin ajuste adicional, todos compiten con score base
 
       return CultivoRecomendado(
         cultivo: c.cultivo,

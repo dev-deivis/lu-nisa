@@ -231,75 +231,99 @@ class _ClimaDetalle extends StatelessWidget {
     required this.onCambiar,
   });
 
+  static const _meses = [
+    '', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+  ];
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final mes = _meses[DateTime.now().month];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: info.iconBg,
-            shape: BoxShape.circle,
-          ),
-          child: Icon(info.icono, size: 36, color: info.iconColor),
+        Row(
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: info.iconBg,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(info.icono, size: 30, color: info.iconColor),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          municipio,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF414844),
+                            letterSpacing: 0.1,
+                          ),
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: onCambiar,
+                        child: const Text(
+                          'Cambiar',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF012D1D),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        '${clima.tempMedia.round()}°C',
+                        style: const TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          color: Color(0xFF1C1C19),
+                          letterSpacing: -0.6,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '(prom. $mes)',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Color(0xFF737977),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        info.condicion,
+                        style: const TextStyle(
+                            fontSize: 16, color: Color(0xFF414844)),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      municipio,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFF414844),
-                        letterSpacing: 0.1,
-                      ),
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: onCambiar,
-                    child: const Text(
-                      'Cambiar',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF012D1D),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.baseline,
-                textBaseline: TextBaseline.alphabetic,
-                children: [
-                  Text(
-                    '${clima.tempMedia.round()}°C',
-                    style: const TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF1C1C19),
-                      letterSpacing: -0.6,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    info.condicion,
-                    style: const TextStyle(
-                        fontSize: 16, color: Color(0xFF414844)),
-                  ),
-                ],
-              ),
-            ],
-          ),
+        const SizedBox(height: 8),
+        const Text(
+          'Promedio histórico 2018-2023 · Sierra Norte',
+          style: TextStyle(fontSize: 11, color: Color(0xFF9E9E9E)),
         ),
       ],
     );

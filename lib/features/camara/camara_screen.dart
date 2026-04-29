@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
-import '../../core/theme/app_theme.dart';
 import '../../core/providers/app_provider.dart';
 import '../../ml/image_analyzer.dart';
 
@@ -61,6 +60,7 @@ class _CamaraScreenState extends State<CamaraScreen> {
     } catch (_) {
       if (!mounted) return;
       await Future.delayed(const Duration(seconds: 3));
+      if (!mounted) return;
       context.read<AppProvider>().setCondicionParcela(ParcelCondition.sinFoto);
       context.go('/recomendacion');
     }
@@ -220,8 +220,8 @@ class _AreaFoto extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.1),
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withValues(alpha: 0.1),
+                    Colors.black.withValues(alpha: 0.4),
                   ],
                 ),
               ),
@@ -242,7 +242,7 @@ class _AreaFoto extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF012d1d).withOpacity(0.85),
+                    color: const Color(0xFF012d1d).withValues(alpha: 0.85),
                     borderRadius: BorderRadius.circular(24),
                   ),
                   child: const Text(
@@ -261,7 +261,7 @@ class _AreaFoto extends StatelessWidget {
               child: Icon(
                 Icons.center_focus_strong,
                 size: 64,
-                color: const Color(0xFFB7E4C7).withOpacity(0.9), // light green
+                color: const Color(0xFFB7E4C7).withValues(alpha: 0.9), // light green
               ),
             ),
           ],
@@ -340,7 +340,7 @@ class ScannerOverlayPainter extends CustomPainter {
     
     // Draw dashed lines between corners
     final dashPaint = Paint()
-      ..color = Colors.white.withOpacity(0.8)
+      ..color = Colors.white.withValues(alpha: 0.8)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2;
       
@@ -433,7 +433,7 @@ class _PantallaCargaState extends State<_PantallaCarga> with SingleTickerProvide
                       height: 160,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFFD3EADD).withOpacity(0.5),
+                        color: const Color(0xFFD3EADD).withValues(alpha: 0.5),
                       ),
                     ),
                     SizedBox(

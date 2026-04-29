@@ -472,6 +472,11 @@ class _TarjetaPrincipal extends StatelessWidget {
                 if (condicion != null) ...[
                   const SizedBox(height: 12),
                   _BadgeParcela(condicion: condicion!),
+                  const SizedBox(height: 8),
+                  _BadgeRazon(soilType: condicion!.soilType),
+                ] else ...[
+                  const SizedBox(height: 12),
+                  const _BannerSinFoto(),
                 ],
               ],
             ),
@@ -553,6 +558,79 @@ class _BadgeParcela extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _BadgeRazon extends StatelessWidget {
+  final String soilType;
+  const _BadgeRazon({required this.soilType});
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color, bg) = switch (soilType) {
+      'seco' => (
+          '✓ Resistente a sequía',
+          const Color(0xFFE65100),
+          const Color(0xFFFFF3E0),
+        ),
+      'humedo' => (
+          '✓ Tolera humedad',
+          const Color(0xFF1565C0),
+          const Color(0xFFE3F2FD),
+        ),
+      _ => (
+          '✓ Ideal para suelo fértil',
+          _kSecondary,
+          const Color(0xFFE8F5E9),
+        ),
+    };
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withAlpha(60)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 13,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
+    );
+  }
+}
+
+class _BannerSinFoto extends StatelessWidget {
+  const _BannerSinFoto();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F3EF),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE0DDD8)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.add_a_photo_outlined, size: 16, color: Color(0xFF737977)),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Toma una foto de tu parcela para recomendaciones más precisas',
+              style: TextStyle(fontSize: 12, color: Color(0xFF737977)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -797,6 +875,7 @@ class _TarjetaClima extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Título en su propio Row sin badge (evita que "Clima Esperado" se parta)
           const Row(
             children: [
               Icon(Icons.cloud_rounded, color: _kSecondary, size: 18),
@@ -811,41 +890,30 @@ class _TarjetaClima extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                '${tempMedia.toStringAsFixed(0)}°',
-                style: const TextStyle(
-                  fontSize: 42,
-                  fontWeight: FontWeight.w700,
-                  color: _kOnSurface,
-                  height: 1,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      descripcion,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _kPrimary,
-                      ),
-                    ),
-                    Text(
-                      '${precipitacion.toStringAsFixed(0)} mm · ${humedad.toStringAsFixed(0)}%',
-                      style: const TextStyle(
-                          fontSize: 11, color: _kOnSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+          const SizedBox(height: 10),
+          // Temperatura en layout vertical: cada elemento usa el ancho completo
+          Text(
+            '${tempMedia.toStringAsFixed(0)}°',
+            style: const TextStyle(
+              fontSize: 34,
+              fontWeight: FontWeight.w700,
+              color: _kOnSurface,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            descripcion,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: _kPrimary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            '${precipitacion.toStringAsFixed(0)} mm · ${humedad.toStringAsFixed(0)}% hum.',
+            style: const TextStyle(fontSize: 10, color: _kOnSurfaceVariant),
           ),
           const SizedBox(height: 10),
           Container(
@@ -874,6 +942,18 @@ class _TarjetaClima extends StatelessWidget {
                     color: const Color(0xFFE65100)),
               ],
             ),
+          ),
+          // Nota histórica al pie de la card
+          const SizedBox(height: 8),
+          const Row(
+            children: [
+              Icon(Icons.history_rounded, size: 10, color: _kOnSurfaceVariant),
+              SizedBox(width: 3),
+              Text(
+                'Datos históricos 2018-2023',
+                style: TextStyle(fontSize: 9, color: _kOnSurfaceVariant),
+              ),
+            ],
           ),
         ],
       ),
