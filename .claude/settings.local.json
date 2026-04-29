@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(flutter --version)",
+      "Bash(flutter devices *)",
+      "PowerShell(Test-Path *)",
+      "Bash(git *)",
+      "Bash(python3 *)"
+    ]
+  }
+}

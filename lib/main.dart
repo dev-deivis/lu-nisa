@@ -11,6 +11,7 @@ import 'features/recomendacion/recomendacion_screen.dart';
 import 'features/historial/historial_screen.dart';
 import 'features/main_screen.dart';
 import 'features/perfil/perfil_screen.dart';
+import 'features/ubicacion/ubicacion_screen.dart';
 
 final _router = GoRouter(
   initialLocation: '/',
@@ -18,6 +19,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/',
       builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/ubicacion',
+      builder: (context, state) => const UbicacionScreen(),
     ),
     GoRoute(
       path: '/municipio',

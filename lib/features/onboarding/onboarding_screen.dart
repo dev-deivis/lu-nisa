@@ -65,7 +65,7 @@ class OnboardingScreen extends StatelessWidget {
                     width: double.infinity,
                     height: 56,
                     child: ElevatedButton(
-                      onPressed: () => context.go('/inicio'),
+                      onPressed: () => context.go('/ubicacion'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF012D1D),
                         foregroundColor: Colors.white,
