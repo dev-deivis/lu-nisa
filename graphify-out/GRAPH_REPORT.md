@@ -81,7 +81,7 @@ Nodes (23): _AnalizarButton, build, _CargandoClima, _ClimaDetalle, _ClimaInfo, C
 
 ### Community 5 - "Community 5"
 Cohesion: 0.09
-Nodes (22): ../../core/data/municipios_data.dart, _BarraBusqueda, build, Center, Column, _ContadorResultados, Container, dispose (+14 more)
+Nodes (22): AppBar, _bgIconCultivo, build, Center, _ChipFiltro, _ContenidoHistorial, CustomScrollView, _emojiCultivo (+14 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.09
@@ -93,7 +93,7 @@ Nodes (22): _AreaFoto, _BotonAccion, build, CamaraScreen, _CamaraScreenState, _C
 
 ### Community 8 - "Community 8"
 Cohesion: 0.09
-Nodes (22): AppBar, _bgIconCultivo, build, Center, _ChipFiltro, _ContenidoHistorial, CustomScrollView, _emojiCultivo (+14 more)
+Nodes (22): ../../core/data/municipios_data.dart, _BarraBusqueda, build, Center, Column, _ContadorResultados, Container, dispose (+14 more)
 
 ### Community 9 - "Community 9"
 Cohesion: 0.1
@@ -129,19 +129,19 @@ Nodes (2): handle_new_rx_page(), Intercept NOTIFY_DEBUGGER_ABOUT_RX_PAGES and to
 
 ### Community 17 - "Community 17"
 Cohesion: 0.67
-Nodes (2): ClimaMes, CultivoRecomendado
+Nodes (1): GeneratedPluginRegistrant
 
 ### Community 18 - "Community 18"
 Cohesion: 0.67
-Nodes (2): GeneratedPluginRegistrant, -registerWithRegistry
+Nodes (2): ClimaMes, CultivoRecomendado
 
 ### Community 19 - "Community 19"
 Cohesion: 0.67
-Nodes (2): FlutterSceneDelegate, SceneDelegate
+Nodes (2): GeneratedPluginRegistrant, -registerWithRegistry
 
 ### Community 20 - "Community 20"
 Cohesion: 0.67
-Nodes (1): GeneratedPluginRegistrant
+Nodes (2): FlutterSceneDelegate, SceneDelegate
 
 ### Community 21 - "Community 21"
 Cohesion: 1.0
@@ -154,13 +154,13 @@ Nodes (1): MainActivity
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 16`** (4 nodes): `handle_new_rx_page()`, `__lldb_init_module()`, `Intercept NOTIFY_DEBUGGER_ABOUT_RX_PAGES and touch the pages.`, `flutter_lldb_helper.py`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 17`** (3 nodes): `ClimaMes`, `CultivoRecomendado`, `cultivo_recomendado.dart`
+- **Thin community `Community 17`** (3 nodes): `GeneratedPluginRegistrant.java`, `GeneratedPluginRegistrant`, `.registerWith()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 18`** (3 nodes): `GeneratedPluginRegistrant.m`, `GeneratedPluginRegistrant`, `-registerWithRegistry`
+- **Thin community `Community 18`** (3 nodes): `ClimaMes`, `CultivoRecomendado`, `cultivo_recomendado.dart`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 19`** (3 nodes): `FlutterSceneDelegate`, `SceneDelegate.swift`, `SceneDelegate`
+- **Thin community `Community 19`** (3 nodes): `GeneratedPluginRegistrant.m`, `GeneratedPluginRegistrant`, `-registerWithRegistry`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 20`** (3 nodes): `GeneratedPluginRegistrant.java`, `GeneratedPluginRegistrant`, `.registerWith()`
+- **Thin community `Community 20`** (3 nodes): `FlutterSceneDelegate`, `SceneDelegate.swift`, `SceneDelegate`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 21`** (2 nodes): `MainActivity.kt`, `MainActivity`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
