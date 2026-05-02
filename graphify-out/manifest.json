@@ -1,0 +1,422 @@
+{
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/generar_recomendaciones.py": {
+    "mtime": 1777175842.8953195,
+    "hash": "f68049d8e3abb3750291db892ce633a3"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/descargar_faltantes.py": {
+    "mtime": 1777172545.4214022,
+    "hash": "75bb0e0d6ea94e0d09f63dcc884ce8b9"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/descargar_clima_v2.py": {
+    "mtime": 1777171806.6375444,
+    "hash": "8e7b10586a94d89a10842b70a77e002e"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/descargar_clima.py": {
+    "mtime": 1777171663.5015728,
+    "hash": "334837bee9fb8405a581c833529d59ab"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/test/widget_test.dart": {
+    "mtime": 1777173772.5540512,
+    "hash": "05801eff66b0c57e27e3c70bf953faaf"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/flutter/generated_plugin_registrant.cc": {
+    "mtime": 1777173189.6886249,
+    "hash": "36e7e1e228d765298e569f21518372b9"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/flutter/generated_plugin_registrant.h": {
+    "mtime": 1777172961.4557288,
+    "hash": "0ea33875f9f8e118f9c2ded03e2e2835"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/utils.h": {
+    "mtime": 1777172959.0836985,
+    "hash": "c741fb9cddbf3a62f4688b6cca39ddcc"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/utils.cpp": {
+    "mtime": 1777172959.0873172,
+    "hash": "9b5697b276c8ad67a02ec12ad2c09851"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/flutter_window.h": {
+    "mtime": 1777172959.0896986,
+    "hash": "79bea736711adda00c49419a39a4a0b4"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/flutter_window.cpp": {
+    "mtime": 1777172959.0906987,
+    "hash": "9b92b95a9eecce25e3e9d356688d0cb6"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/main.cpp": {
+    "mtime": 1777172959.0856986,
+    "hash": "7fa1cfdb8e1be29e98091d66eb3ec942"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/win32_window.h": {
+    "mtime": 1777172959.0916986,
+    "hash": "5a4cf051798d7e6931ee0405a4523c8f"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/win32_window.cpp": {
+    "mtime": 1777172959.0986986,
+    "hash": "928e86a2be27eca688669dce6c9177d9"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/resource.h": {
+    "mtime": 1777172959.103262,
+    "hash": "c8f809a4f8d3f2f625e358fd90f72fee"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Flutter/ephemeral/flutter_lldb_helper.py": {
+    "mtime": 1777172961.2487261,
+    "hash": "98fc75412162af387e2e3461e4e58094"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/SceneDelegate.swift": {
+    "mtime": 1777172959.1376991,
+    "hash": "748d701e783e68faf618c00464257a19"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/GeneratedPluginRegistrant.h": {
+    "mtime": 1777172961.466729,
+    "hash": "decb9041b5e91a07e66f4664e5dac408"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/AppDelegate.swift": {
+    "mtime": 1777172959.1406991,
+    "hash": "2bd8469f2a4b701ff582f6574e58b13c"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Runner-Bridging-Header.h": {
+    "mtime": 1777172959.1416993,
+    "hash": "e07862ac930ed4d8479185d52c6cc66d"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/GeneratedPluginRegistrant.m": {
+    "mtime": 1777177853.5404627,
+    "hash": "d8a09c8b0cfc2a2f5fde81d08660e7ba"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/RunnerTests/RunnerTests.swift": {
+    "mtime": 1777172959.2097,
+    "hash": "a225a382d14d7b16b6f602a5c1d49331"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Flutter/GeneratedPluginRegistrant.swift": {
+    "mtime": 1777173189.696625,
+    "hash": "d3d9d851be4a993a4ef7c33f3c8210e9"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/MainFlutterWindow.swift": {
+    "mtime": 1777172959.2217002,
+    "hash": "4a747b1f256d62a2bbb79bd976891eb5"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/AppDelegate.swift": {
+    "mtime": 1777172959.2363384,
+    "hash": "2a7411ae3e7c6715525b94b6f8d2e80b"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/RunnerTests/RunnerTests.swift": {
+    "mtime": 1777172959.277701,
+    "hash": "97d3a20fd20a063c192e886d1822b4a8"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/flutter/generated_plugin_registrant.cc": {
+    "mtime": 1777173189.683625,
+    "hash": "399ad1d69aa4ba27ae90eb088bbc155c"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/flutter/generated_plugin_registrant.h": {
+    "mtime": 1777172961.4472725,
+    "hash": "d295462c9da9f7fef22dc86c34492318"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/runner/my_application.h": {
+    "mtime": 1777172959.0696983,
+    "hash": "326a85d68857137fdfe8698a0c071baf"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/runner/my_application.cc": {
+    "mtime": 1777172959.0676982,
+    "hash": "14ee3ba49596424a7041b99f10060b16"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/runner/main.cc": {
+    "mtime": 1777172959.0726984,
+    "hash": "0643b8609698e96b3abd63c210361a87"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/main.dart": {
+    "mtime": 1777441460.0837307,
+    "hash": "992aa6d1a6c181f1ccb0b51b2cc5a172"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/data/models/cultivo_recomendado.dart": {
+    "mtime": 1777176083.8690798,
+    "hash": "53297d0cf91632009df5da28a3077575"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/data/repositories/recomendacion_repository.dart": {
+    "mtime": 1777427365.5254898,
+    "hash": "0f870afff1112ae733aac3f4b6a5a1ee"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/ml/image_analyzer.dart": {
+    "mtime": 1777427330.3012838,
+    "hash": "d7aaefed14cc2b1a19062c1e4b02a9d0"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/main_screen.dart": {
+    "mtime": 1777344280.2809675,
+    "hash": "5b08aae989b65adbe59ca60efba9d592"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/historial/historial_screen.dart": {
+    "mtime": 1777344358.9194813,
+    "hash": "432fa36c9f0e12af75bbeb98003a1556"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/camara/camara_screen.dart": {
+    "mtime": 1777427617.2676902,
+    "hash": "fa753694cdc7278dc4e03331a0907962"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/recomendacion/recomendacion_screen.dart": {
+    "mtime": 1777429958.1520038,
+    "hash": "2bd19aa2543c936fb2053e34b54be1af"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/inicio/inicio_screen.dart": {
+    "mtime": 1777427393.2244883,
+    "hash": "b0fe00f15eed093f500d50fe60cbf9a4"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/municipio/municipio_screen.dart": {
+    "mtime": 1777441460.0826373,
+    "hash": "236ce26f93b80ac3ef35dafcea22a634"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/ubicacion/ubicacion_screen.dart": {
+    "mtime": 1777441460.0828059,
+    "hash": "6c543b5ade060e4b91f1a58ca7c47d4a"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/onboarding/onboarding_screen.dart": {
+    "mtime": 1777441460.0826373,
+    "hash": "5a046c0a66d6c48628caf8e40c6b1849"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/features/perfil/perfil_screen.dart": {
+    "mtime": 1777344424.9034524,
+    "hash": "bb6c7c75021247a708fa9733b9860bbd"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/core/data/municipios_data.dart": {
+    "mtime": 1777441460.0818365,
+    "hash": "a9c895ced87cb76401d33942b37eb111"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/core/theme/app_theme.dart": {
+    "mtime": 1777173752.8757696,
+    "hash": "94d29ee0891c45a7ada4a7ed95fdfdda"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/core/widgets/bottom_nav.dart": {
+    "mtime": 1777344064.7396019,
+    "hash": "16d0ee62b7d4632e29829edfdbcac83e"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/core/providers/app_provider.dart": {
+    "mtime": 1777344064.7396019,
+    "hash": "2edbd2712ceed7516623079996c466f2"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/lib/core/services/location_service.dart": {
+    "mtime": 1777441460.0818365,
+    "hash": "c4c7d08a481b913b6994ea139f39fb60"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/gradlew": {
+    "mtime": 1777172959.3887024,
+    "hash": "7f1cd7eb3f75a1dc85cd37753972a6e2"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/build.gradle.kts": {
+    "mtime": 1777172959.1086988,
+    "hash": "f11f360aed44d4f6871b398346af14f0"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/settings.gradle.kts": {
+    "mtime": 1777172959.285701,
+    "hash": "094e3cafe85d4dbf756dfe0bd754c6cb"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/build.gradle.kts": {
+    "mtime": 1777172959.1126988,
+    "hash": "667b67607b2615e439021e3c07e5c4b2"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/src/main/java/io/flutter/plugins/GeneratedPluginRegistrant.java": {
+    "mtime": 1777177853.5255656,
+    "hash": "8fc58ee2a7f935ef5df0b1da1cf334f3"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/src/main/kotlin/mx/lunisa/lunisa/MainActivity.kt": {
+    "mtime": 1777172959.115699,
+    "hash": "46f87309d2dc478813fc7b2de7627af0"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/CLAUDE.md": {
+    "mtime": 1777746858.866317,
+    "hash": "8ee39dcfe68a23b3797b02648930d699"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/analysis_options.yaml": {
+    "mtime": 1777172959.280701,
+    "hash": "66d03d7647c8e438164feaf5b922d44a"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/pubspec.yaml": {
+    "mtime": 1777349799.1340482,
+    "hash": "bf426ddede4b4dadf0a3426f30f2cf95"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/README.md": {
+    "mtime": 1777348132.7255805,
+    "hash": "d4b93992443ab30c9deeb491e9beadd3"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/CMakeLists.txt": {
+    "mtime": 1777172959.1066988,
+    "hash": "881f75650373225a8a9b1fbfdeb16a02"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/flutter/CMakeLists.txt": {
+    "mtime": 1777172959.0826986,
+    "hash": "0c500410e3259a9a053797dc1c28070e"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/windows/runner/CMakeLists.txt": {
+    "mtime": 1777172959.0886986,
+    "hash": "e99a99b5cc82a168fc557eb23b8d5a96"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/LaunchImage.imageset/README.md": {
+    "mtime": 1777172959.1786997,
+    "hash": "e175e436acacf76c814d83532d0b662c"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/web/index.html": {
+    "mtime": 1777172959.126699,
+    "hash": "9af0cc7b0c0093bbe480ec89280f3a69"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/CMakeLists.txt": {
+    "mtime": 1777172959.0806985,
+    "hash": "4fe051f6c50e7f401c5aa4a58d7797b1"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/flutter/CMakeLists.txt": {
+    "mtime": 1777172959.0306978,
+    "hash": "46690fb8ffaf7d227d8bc4713f31140d"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/linux/runner/CMakeLists.txt": {
+    "mtime": 1777172959.0714247,
+    "hash": "6d75431dc21756981b53a7494c836311"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/recursos/oaxaca-sierra-norte-forest.jpg": {
+    "mtime": 1777344064.7435675,
+    "hash": "d526e63d6b80521db064a553040ec0ff"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/recursos/LogoLuNisa.png": {
+    "mtime": 1777344064.743024,
+    "hash": "10f9089181c01b5f3547c48161610642"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/recursos/maiz.jpg": {
+    "mtime": 1777349799.144665,
+    "hash": "ac46426e8589efc57c41bb92e753410a"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@2x.png": {
+    "mtime": 1777172959.1714818,
+    "hash": "2247a840b6ee72b8a069208af170e5b1"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@3x.png": {
+    "mtime": 1777172959.1702375,
+    "hash": "2b1452c4c1bda6177b4fbbb832df217f"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@1x.png": {
+    "mtime": 1777172959.1526995,
+    "hash": "be8887071dd7ec39cb754d236aa9584f"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@2x.png": {
+    "mtime": 1777172959.1476994,
+    "hash": "8245359312aea1b0d2412f79a07b0ca5"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@2x.png": {
+    "mtime": 1777172959.1666996,
+    "hash": "643842917530acf4c5159ae851b0baf2"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@1x.png": {
+    "mtime": 1777172959.1456993,
+    "hash": "a2f8558fb1d42514111fbbb19fb67314"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-83.5x83.5@2x.png": {
+    "mtime": 1777172959.1573763,
+    "hash": "665cb5e3c5729da6d639d26eff47a503"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@2x.png": {
+    "mtime": 1777172959.151329,
+    "hash": "5b3c0902200ce596e9848f22e1f0fe0e"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-29x29@2x.png": {
+    "mtime": 1777172959.1586995,
+    "hash": "043119ef4faa026ff82bd03f241e5338"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@3x.png": {
+    "mtime": 1777172959.1436994,
+    "hash": "5b3c0902200ce596e9848f22e1f0fe0e"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-1024x1024@1x.png": {
+    "mtime": 1777172959.1686995,
+    "hash": "c785f8932297af4acd5f5ccb7630f01c"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-20x20@3x.png": {
+    "mtime": 1777172959.1596994,
+    "hash": "1b3b1538136316263c7092951e923e9d"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-76x76@1x.png": {
+    "mtime": 1777172959.1642756,
+    "hash": "36c0d7a7132bdde18898ffdfcfcdc4d2"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-40x40@1x.png": {
+    "mtime": 1777172959.1626995,
+    "hash": "2247a840b6ee72b8a069208af170e5b1"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/AppIcon.appiconset/Icon-App-60x60@3x.png": {
+    "mtime": 1777172959.1496994,
+    "hash": "e419d22a37bc40ba185aca1acb6d4ac6"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@3x.png": {
+    "mtime": 1777172959.1743796,
+    "hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage@2x.png": {
+    "mtime": 1777172959.1756997,
+    "hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/ios/Runner/Assets.xcassets/LaunchImage.imageset/LaunchImage.png": {
+    "mtime": 1777172959.1726997,
+    "hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_256.png": {
+    "mtime": 1777172959.2553291,
+    "hash": "dfe2c93d1536ae02f085cc63faa3430e"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_128.png": {
+    "mtime": 1777172959.2417006,
+    "hash": "3ded30823804caaa5ccc944067c54a36"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_1024.png": {
+    "mtime": 1777172959.2497005,
+    "hash": "c9becc9105f8cabce934d20c7bfb6aac"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_512.png": {
+    "mtime": 1777172959.2537007,
+    "hash": "0ad44039155424738917502c69667699"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_16.png": {
+    "mtime": 1777172959.2437005,
+    "hash": "8bf511604bc6ed0a6aeb380c5113fdcf"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_64.png": {
+    "mtime": 1777172959.2517006,
+    "hash": "04e7b6ef05346c70b663ca1d97de3ad5"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/macos/Runner/Assets.xcassets/AppIcon.appiconset/app_icon_32.png": {
+    "mtime": 1777172959.2457006,
+    "hash": "8e0ae58e362a6636bdfccbc04da2c58c"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/web/favicon.png": {
+    "mtime": 1777172959.117443,
+    "hash": "5dcef449791fa27946b3d35ad8803796"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/web/icons/Icon-192.png": {
+    "mtime": 1777172959.124699,
+    "hash": "ac9a721a12bbc803b44f645561ecb1e1"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/web/icons/Icon-maskable-192.png": {
+    "mtime": 1777172959.120699,
+    "hash": "c457ef57daa1d16f64b27b786ec2ea3c"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/web/icons/Icon-maskable-512.png": {
+    "mtime": 1777172959.123699,
+    "hash": "301a7604d45b3e739efc881eb04896ea"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/web/icons/Icon-512.png": {
+    "mtime": 1777172959.1224034,
+    "hash": "96e752610906ba2a93c65f8abe1645f1"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/src/main/res/mipmap-mdpi/ic_launcher.png": {
+    "mtime": 1777172959.290391,
+    "hash": "6270344430679711b81476e29878caa7"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/src/main/res/mipmap-xhdpi/ic_launcher.png": {
+    "mtime": 1777172959.291701,
+    "hash": "a0a8db5985280b3679d99a820ae2db79"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png": {
+    "mtime": 1777172959.2927012,
+    "hash": "57838d52c318faff743130c3fcfae0c6"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png": {
+    "mtime": 1777172959.2987013,
+    "hash": "afe1b655b9f32da22f9a4301bb8e6ba8"
+  },
+  "/home/eldeivis/Documentos/8VO_SEMESTRE/PROYECTS/lunisa/android/app/src/main/res/mipmap-hdpi/ic_launcher.png": {
+    "mtime": 1777172959.2997012,
+    "hash": "13e9c72ec37fac220397aa819fa1ef2d"
+  }
+}
