@@ -44,3 +44,12 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 Lu_nisa_vistas1
+# Backend Python
+backend/.env
+backend/.venv/
+__pycache__/
+.pytest_cache/
+
+# Salida generada por graphify (se regenera con `graphify update .`)
+graphify-out/
+backend/samples/*.jpg
