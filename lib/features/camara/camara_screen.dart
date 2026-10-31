@@ -4,7 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import '../../core/providers/app_provider.dart';
-import '../../ml/image_analyzer.dart';
+import '../../core/services/backend_service.dart';
+import '../../data/models/condicion_parcela.dart';
 
 class CamaraScreen extends StatefulWidget {
   const CamaraScreen({super.key});
@@ -21,7 +22,8 @@ class _CamaraScreenState extends State<CamaraScreen> {
   Future<void> _tomarFoto() async {
     final foto = await _picker.pickImage(
       source: ImageSource.camera,
-      maxWidth: 1080,
+      maxWidth: 1024,
+      maxHeight: 1024,
       imageQuality: 85,
     );
     if (foto != null) setState(() => _imagen = foto);
@@ -30,7 +32,8 @@ class _CamaraScreenState extends State<CamaraScreen> {
   Future<void> _seleccionarGaleria() async {
     final foto = await _picker.pickImage(
       source: ImageSource.gallery,
-      maxWidth: 1080,
+      maxWidth: 1024,
+      maxHeight: 1024,
       imageQuality: 85,
     );
     if (foto != null) setState(() => _imagen = foto);
@@ -44,26 +47,106 @@ class _CamaraScreenState extends State<CamaraScreen> {
       if (_imagen == null) return;
     }
     
-    setState(() {
-      _cargando = true;
-    });
+    setState(() => _cargando = true);
 
+    // null si el backend no responde (sin red, apagado, timeout de 90 s)
+    CondicionParcela? condicion;
     try {
-      final condicion = await ImageAnalyzer.analyzeParcel(_imagen!.path);
-      
-      // Simulate slightly longer loading time so user can appreciate the loading design
-      await Future.delayed(const Duration(seconds: 3));
-
-      if (!mounted) return;
-      context.read<AppProvider>().setCondicionParcela(condicion);
-      context.go('/recomendacion');
-    } catch (_) {
-      if (!mounted) return;
-      await Future.delayed(const Duration(seconds: 3));
-      if (!mounted) return;
-      context.read<AppProvider>().setCondicionParcela(ParcelCondition.sinFoto);
-      context.go('/recomendacion');
+      condicion = await BackendService.analizarParcela(File(_imagen!.path));
+    } catch (e) {
+      debugPrint('[Camara] Backend no disponible: $e');
     }
+
+    if (!mounted) return;
+    setState(() => _cargando = false);
+
+    if (condicion != null && !condicion.esParcela) {
+      final tomarOtra = await _dialogoNoEsParcela();
+      if (!mounted) return;
+      if (tomarOtra) {
+        setState(() => _imagen = null);
+        return;
+      }
+      _irARecomendacion(null);
+      return;
+    }
+
+    if (condicion == null || condicion.preguntarHumedad) {
+      final respuesta = await _preguntarLluvia();
+      if (respuesta == null || !mounted) return;
+      condicion = condicion?.conRespuesta(respuesta) ??
+          CondicionParcela.soloRespuesta(respuesta);
+    }
+
+    _irARecomendacion(condicion);
+  }
+
+  void _irARecomendacion(CondicionParcela? condicion) {
+    context.read<AppProvider>().setCondicionParcela(condicion);
+    context.go('/recomendacion');
+  }
+
+  /// true = tomar otra foto, false = continuar sin foto
+  Future<bool> _dialogoNoEsParcela() async {
+    final tomarOtra = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.landscape_outlined, color: Color(0xFF012d1d), size: 36),
+        title: const Text('Esta foto no parece una parcela'),
+        content: const Text(
+          'Toma una foto del terreno donde quieres sembrar, con la tierra a la vista.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Continuar sin foto'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(backgroundColor: const Color(0xFF012d1d)),
+            child: const Text('Tomar otra'),
+          ),
+        ],
+      ),
+    );
+    return tomarOtra ?? true;
+  }
+
+  /// null si el usuario cierra el diálogo con "atrás"
+  Future<RespuestaLluvia?> _preguntarLluvia() {
+    Widget opcion(BuildContext context, String texto, RespuestaLluvia r) => Expanded(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: OutlinedButton(
+              onPressed: () => Navigator.pop(context, r),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF012d1d),
+                side: const BorderSide(color: Color(0xFF012d1d), width: 1.5),
+                minimumSize: const Size(0, 52),
+              ),
+              child: Text(texto, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+            ),
+          ),
+        );
+
+    return showDialog<RespuestaLluvia>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.water_drop_outlined, color: Color(0xFF1565C0), size: 36),
+        title: const Text(
+          '¿Llovió en tu parcela en los últimos 7 días?',
+          textAlign: TextAlign.center,
+        ),
+        content: Row(
+          children: [
+            opcion(context, 'Sí', RespuestaLluvia.si),
+            opcion(context, 'Poco', RespuestaLluvia.poco),
+            opcion(context, 'No', RespuestaLluvia.no),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -472,7 +555,7 @@ class _PantallaCargaState extends State<_PantallaCarga> with SingleTickerProvide
                 ),
                 const SizedBox(height: 40),
                 const Text(
-                  'Analizando tu\nparcela y condiciones\nclimáticas...',
+                  'Analizando tu\nparcela...',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 26,
@@ -483,7 +566,7 @@ class _PantallaCargaState extends State<_PantallaCarga> with SingleTickerProvide
                 ),
                 const SizedBox(height: 20),
                 const Text(
-                  'Consultando el conocimiento de\nla tierra y los pronósticos más\nrecientes.',
+                  'Estamos revisando tu foto.\nPuede tardar hasta un minuto.',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 16,

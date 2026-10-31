@@ -1,6 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Necesario en release para llamar al backend (debug lo trae por defecto) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="lunisa"
+        android:usesCleartextTraffic="true"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

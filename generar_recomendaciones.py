@@ -5,11 +5,14 @@ from collections import defaultdict
 # 1. Cargar clima — promedios mensuales por municipio
 print("Cargando datos climáticos...")
 clima = defaultdict(lambda: defaultdict(list))
+# Lluvia total de cada (año, mes): el CSV es diario
+lluvia_mes_anio = defaultdict(lambda: defaultdict(float))
 
 with open("assets/data/historico_sierra_norte.csv", encoding="utf-8") as f:
     for row in csv.DictReader(f):
         municipio = row["municipio"]
         mes = int(row["mes"])
+        lluvia_mes_anio[(municipio, mes)][row["fecha"][:4]] += float(row["precipitacion_mm"] or 0)
         clima[municipio][mes].append({
             "temp_max": float(row["temp_max"] or 0),
             "temp_min": float(row["temp_min"] or 0),
@@ -29,6 +32,12 @@ for municipio, meses in clima.items():
             "temp_media": round(sum(d["temp_media"] for d in dias) / len(dias), 1),
             "precipitacion": round(sum(d["precipitacion"] for d in dias) / len(dias), 1),
             "humedad": round(sum(d["humedad"] for d in dias) / len(dias), 1),
+            # "precipitacion" es el promedio DIARIO (lo usa el score base);
+            # este es el total del mes promediado entre años, el que se muestra al usuario
+            "precipitacion_mensual": round(
+                sum(lluvia_mes_anio[(municipio, mes)].values())
+                / len(lluvia_mes_anio[(municipio, mes)])
+            ),
         }
 
 # 2. Cargar cultivos
@@ -53,6 +62,10 @@ with open("assets/data/cultivos_sierra_norte.csv", encoding="utf-8") as f:
             "meses_cosecha": meses_cosecha,
             "municipios": municipios_cultivo,
             "notas": row["notas"].strip(),
+            # bajo | medio | alto — lo usa la app para ajustar según la humedad de la parcela
+            "requerimiento_agua": row["requerimiento_agua"].strip(),
+            # Columna opcional: consejos prácticos separados por "|". Vacía → la app oculta la sección
+            "recomendaciones": [r.strip() for r in (row.get("recomendaciones") or "").split("|") if r.strip()],
         })
 
 # 3. Cargar altitudes de municipios
@@ -183,10 +196,14 @@ for info in municipios_info:
                 "meses_siembra": c["meses_siembra"],
                 "meses_cosecha": c["meses_cosecha"],
                 "notas": c["notas"],
+                "requerimiento_agua": c["requerimiento_agua"],
+                "recomendaciones": c["recomendaciones"],
             })
 
         recomendados.sort(key=lambda x: x["score"], reverse=True)
-        resultado[nombre]["recomendaciones_por_mes"][mes] = recomendados[:3]
+        # Se guardan todos los candidatos: la app reordena según la humedad
+        # de la parcela y después toma el top 3
+        resultado[nombre]["recomendaciones_por_mes"][mes] = recomendados
 
 # 5. Guardar JSON
 with open("assets/data/recomendaciones.json", "w", encoding="utf-8") as f:
