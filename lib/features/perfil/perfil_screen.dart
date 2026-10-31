@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/providers/app_provider.dart';
+import '../../core/services/backend_service.dart';
 
 // Paleta del diseño HTML
 const _kPrimary = Color(0xFF012d1d);
@@ -131,6 +132,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     onChanged: (v) => setState(() => climaAlertas = v),
                   ),
                   const Divider(height: 1, color: _kOutlineVariant),
+                  const _AjusteServidor(),
+                  const Divider(height: 1, color: _kOutlineVariant),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                     child: Row(
@@ -251,6 +254,146 @@ class _UbicacionForm extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// URL del backend de análisis (se guarda en el teléfono)
+class _AjusteServidor extends StatefulWidget {
+  const _AjusteServidor();
+
+  @override
+  State<_AjusteServidor> createState() => _AjusteServidorState();
+}
+
+class _AjusteServidorState extends State<_AjusteServidor> {
+  String? _url;
+
+  @override
+  void initState() {
+    super.initState();
+    BackendService.obtenerUrl().then((u) {
+      if (mounted) setState(() => _url = u);
+    });
+  }
+
+  Future<void> _editar() async {
+    final controlador = TextEditingController(text: _url);
+    final nueva = await showDialog<String>(
+      context: context,
+      builder: (context) => _DialogoServidor(controlador: controlador),
+    );
+    if (nueva == null || nueva.trim().isEmpty) return;
+    await BackendService.guardarUrl(nueva);
+    final guardada = await BackendService.obtenerUrl();
+    if (mounted) setState(() => _url = guardada);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: _editar,
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.grey.shade100,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.dns_rounded, color: _kOnSurfaceVariant, size: 20),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Servidor de análisis',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: _kOnSurface),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _url ?? '…',
+                    style: const TextStyle(fontSize: 13, color: _kOnSurfaceVariant, height: 1.3),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.edit_rounded, color: _kOnSurfaceVariant, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DialogoServidor extends StatefulWidget {
+  final TextEditingController controlador;
+  const _DialogoServidor({required this.controlador});
+
+  @override
+  State<_DialogoServidor> createState() => _DialogoServidorState();
+}
+
+class _DialogoServidorState extends State<_DialogoServidor> {
+  bool _probando = false;
+  bool? _conectado;
+
+  Future<void> _probar() async {
+    setState(() {
+      _probando = true;
+      _conectado = null;
+    });
+    final ok = await BackendService.probarConexion(widget.controlador.text);
+    if (mounted) {
+      setState(() {
+        _probando = false;
+        _conectado = ok;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Servidor de análisis'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: widget.controlador,
+            keyboardType: TextInputType.url,
+            autocorrect: false,
+            decoration: const InputDecoration(
+              hintText: 'http://192.168.1.100:8000',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          if (_probando)
+            const Text('Probando conexión…')
+          else if (_conectado == true)
+            const Text('✓ Conectado', style: TextStyle(color: Color(0xFF1f6d1a), fontWeight: FontWeight.w600))
+          else if (_conectado == false)
+            const Text('✗ No responde. Revisa la IP y que estés en la misma red.',
+                style: TextStyle(color: Color(0xFFb3261e))),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: _probando ? null : _probar,
+          child: const Text('Probar conexión'),
+        ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, widget.controlador.text),
+          style: FilledButton.styleFrom(backgroundColor: _kPrimary),
+          child: const Text('Guardar'),
+        ),
+      ],
     );
   }
 }

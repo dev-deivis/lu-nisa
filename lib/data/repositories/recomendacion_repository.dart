@@ -1,41 +1,24 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../models/cultivo_recomendado.dart';
-import '../../ml/image_analyzer.dart';
+import '../models/condicion_parcela.dart';
 
-// Keywords que indican alta necesidad hídrica
-const _altaAgua = [
-  'cálido húmedo', 'calido humedo', 'húmedo', 'humedo',
-  'lluvia', 'tropical', 'riego', 'precipitación', 'irrigación',
+const _meses = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio',
+  'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
 ];
 
-// Keywords que indican tolerancia a la sequía
-const _toleraSequia = [
-  'tolerante a sequía', 'tolerante a sequia',
-  'resistente a sequía', 'resistente a sequia',
-  'sequía moderada', 'sequia moderada',
-];
-
-// Cultivos excluidos para suelo seco (requieren humedad muy alta)
-const _excluirEnSeco = [
-  'cálido húmedo', 'calido humedo', 'humedad alta',
-  'riego constante', 'suelos húmedos', 'suelos humedos',
-  'zonas altas húmedas', 'zonas altas humedas', '1845 mm',
-];
-
-bool _prefiereMucha(CultivoRecomendado c) {
-  final texto = '${c.notas} ${c.cultivo}'.toLowerCase();
-  return _altaAgua.any(texto.contains);
-}
-
-bool _prefierePocha(CultivoRecomendado c) {
-  final texto = '${c.notas} ${c.cultivo}'.toLowerCase();
-  return _toleraSequia.any(texto.contains);
-}
-
-bool _debeExcluirSeco(CultivoRecomendado c) {
-  final texto = '${c.notas} ${c.cultivo}'.toLowerCase();
-  return _excluirEnSeco.any(texto.contains);
+/// Meses (1-12) de un rango como "Octubre-Enero"; maneja el cruce de año.
+List<int> mesesDeRango(String rango) {
+  final partes = rango
+      .toLowerCase()
+      .split('-')
+      .map((m) => _meses.indexOf(m.trim()) + 1)
+      .toList();
+  if (partes.isEmpty || partes.any((m) => m == 0)) return [];
+  final inicio = partes.first, fin = partes.last;
+  final total = (fin - inicio) % 12 + 1;
+  return [for (var i = 0; i < total; i++) (inicio - 1 + i) % 12 + 1];
 }
 
 class RecomendacionRepository {
@@ -70,43 +53,34 @@ class RecomendacionRepository {
         .toList();
   }
 
-  /// Top 3 con filtrado duro y scores ajustados según la condición del suelo
-  List<CultivoRecomendado> getRecomendacionesConFoto(
+  /// Top 3 ajustado según la humedad de la parcela (foto o respuesta del
+  /// campesino). Solo hay ajustes relativos entre cultivos: un ajuste igual
+  /// para todos no cambia el orden.
+  List<CultivoRecomendado> getRecomendacionesConCondicion(
     String municipio,
     int mes,
-    ParcelCondition condicion,
+    CondicionParcela condicion,
   ) {
+    final humedad = condicion.humedad;
     final todos = _getTodos(municipio, mes);
     if (todos.isEmpty) return [];
 
-    // ── Filtrado duro por tipo de suelo ──────────────────────────────────
-    final candidatos = todos.where((c) {
-      if (condicion.soilType == 'seco') return !_debeExcluirSeco(c);
-      // Para húmedo y fértil no excluimos: todos los cultivos de la Sierra
-      // Norte pueden crecer en esas condiciones
-      return true;
-    }).toList();
+    // Sin dato de humedad ("Poco" o no determinable) → ranking base
+    if (humedad == null) {
+      return (todos..sort((a, b) => b.score.compareTo(a.score))).take(3).toList();
+    }
+    final seca = humedad == 'seca';
 
-    // ── Ajuste de score ───────────────────────────────────────────────────
-    final ajustados = candidatos.map((c) {
-      int score = c.score;
-
-      // Ajuste base de la foto
-      score += condicion.scoreAdjustment;
-
-      // Tierra activa (vegetación presente) → +10 a todos
-      if (condicion.hasVegetation) score += 10;
-
-      if (condicion.soilType == 'seco') {
-        // Cultivos tolerantes a sequía → +15; cultivos que prefieren mucha agua → -30
-        if (_prefierePocha(c)) score += 15;
-        if (_prefiereMucha(c)) score -= 30;
-      } else if (condicion.soilType == 'humedo') {
-        // Cultivos que prefieren humedad → +15; tolerantes a sequía → -5 (leve)
-        if (_prefiereMucha(c)) score += 15;
-        if (_prefierePocha(c)) score -= 5;
-      }
-      // fértil: sin ajuste adicional, todos compiten con score base
+    final ajustados = todos
+        // Filtrado duro: en tierra seca se quitan los cultivos de mucha agua
+        .where((c) => !(seca && c.requerimientoAgua == 'alto'))
+        .map((c) {
+      final score = c.score +
+          (seca
+              // Poca agua → +15; agua media → -10
+              ? switch (c.requerimientoAgua) { 'bajo' => 15, 'medio' => -10, _ => 0 }
+              // húmeda / encharcada: mucha agua → +15; poca agua → -5
+              : switch (c.requerimientoAgua) { 'alto' => 15, 'bajo' => -5, _ => 0 });
 
       return CultivoRecomendado(
         cultivo: c.cultivo,
@@ -114,11 +88,89 @@ class RecomendacionRepository {
         mesesSiembra: c.mesesSiembra,
         mesesCosecha: c.mesesCosecha,
         notas: c.notas,
+        requerimientoAgua: c.requerimientoAgua,
+        recomendaciones: c.recomendaciones,
       );
     }).toList()
       ..sort((a, b) => b.score.compareTo(a.score));
 
     return ajustados.take(3).toList();
+  }
+
+  /// Datos que usó la regla para [cultivo], con su fuente, para POST /explicar.
+  /// fuente: 'foto' → "se ve", 'campesino' → "nos dijiste", 'datos' → históricos.
+  Map<String, Map<String, Object>> datosRegla(
+    String municipio,
+    int mes,
+    CultivoRecomendado cultivo,
+    CondicionParcela? condicion,
+  ) {
+    Map<String, Object> dato(Object valor, String fuente) =>
+        {'valor': valor, 'fuente': fuente};
+
+    final datos = <String, Map<String, Object>>{
+      'se_siembra_en_el_municipio': dato(true, 'datos'),
+    };
+
+    // Regla base (generar_recomendaciones.py): altitud, temperatura y lluvia del mes
+    final altitud = (_datos?[municipio] as Map<String, dynamic>?)?['altitud'];
+    if (altitud is num) datos['altitud'] = dato('${altitud.round()} m', 'datos');
+    final clima = getClima(municipio, mes);
+    if (clima != null) {
+      datos['temperatura_promedio_este_mes'] =
+          dato('${clima.tempMedia.toStringAsFixed(0)} °C', 'datos');
+      datos['lluvia_promedio_este_mes'] =
+          dato('${clima.precipitacionMensual.round()} mm', 'datos');
+    }
+
+    final humedad = condicion?.humedad;
+    if (condicion == null || humedad == null) return datos;
+
+    // Ajuste por humedad
+    if (condicion.humedadDeLaFoto) {
+      datos['humedad_de_la_tierra'] = dato(switch (humedad) {
+        'seca' => 'seca',
+        'encharcada' => 'encharcada',
+        _ => 'húmeda',
+      }, 'foto');
+    } else {
+      datos['llovio_en_los_ultimos_7_dias'] =
+          dato(humedad == 'seca' ? 'no' : 'sí', 'campesino');
+    }
+    datos['agua_que_necesita_el_cultivo'] = dato(switch (cultivo.requerimientoAgua) {
+      'bajo' => 'poca',
+      'alto' => 'mucha',
+      _ => 'media',
+    }, 'datos');
+    return datos;
+  }
+
+  /// Lluvia mensual promedio (mm) en los meses de siembra del cultivo
+  double? lluviaEnSiembra(String municipio, CultivoRecomendado cultivo) {
+    final lluvias = [
+      for (final m in mesesDeRango(cultivo.mesesSiembra))
+        getClima(municipio, m)?.precipitacionMensual,
+    ].whereType<double>().toList();
+    if (lluvias.isEmpty) return null;
+    return lluvias.reduce((a, b) => a + b) / lluvias.length;
+  }
+
+  /// Datos de la fecha de siembra para POST /explicar (campo "siembra").
+  /// El backend arma con esto la razón; el modelo solo la redacta.
+  Map<String, Object> siembra(
+    String municipio,
+    int mes,
+    CultivoRecomendado cultivo,
+  ) {
+    final lluviaSiembra = lluviaEnSiembra(municipio, cultivo);
+    final lluviaActual = getClima(municipio, mes)?.precipitacionMensual;
+    return {
+      'meses': cultivo.mesesSiembra,
+      'se_siembra_este_mes': mesesDeRango(cultivo.mesesSiembra).contains(mes),
+      'lluvia_meses_siembra_mm': ?lluviaSiembra,
+      'lluvia_mes_actual_mm': ?lluviaActual,
+      'agua_cultivo': cultivo.requerimientoAgua,
+    };
   }
 
   ClimaMes? getClima(String municipio, int mes) {

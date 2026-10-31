@@ -79,7 +79,8 @@ class _WeatherWidget extends StatelessWidget {
   const _WeatherWidget();
 
   static _ClimaInfo _infoFromClima(ClimaMes clima) {
-    final p = clima.precipitacion;
+    // Lluvia total del mes (no el promedio diario)
+    final p = clima.precipitacionMensual;
     if (p > 100) {
       return _ClimaInfo('Muy lluvioso', Icons.thunderstorm,
           const Color(0xFFD0E8FF), const Color(0xFF1A4D7A));
