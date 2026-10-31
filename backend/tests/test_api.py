@@ -181,7 +181,7 @@ def test_explicar_usa_ollama_con_fuentes_y_max_tres_oraciones(cliente_con):
     assert r.json()["proveedor"] == "ollama"
     prompt = provs["ollama"].llamadas[0]["prompt"]
     assert "fuente: FOTO" in prompt and "fuente: CAMPESINO" in prompt
-    assert provs["ollama"].llamadas[0]["pensar_minimo"] is True
+    assert provs["ollama"].llamadas[0]["pensar_minimo"] is False  # solo aplica a Gemini
 
 
 def test_explicar_rechaza_fuente_desconocida(cliente_con):
@@ -296,3 +296,46 @@ def test_explicar_pasa_la_razon_armada_al_prompt(cliente_con):
     )
     assert r.status_code == 200, r.text
     assert "suelen llover 138 mm al mes" in provs["ollama"].llamadas[0]["prompt"]
+
+
+# ── Respaldo de /explicar ────────────────────────────────────────────────────
+
+EXPLICAR = {"municipio": "X", "cultivo": "Maíz", "puntaje": 80}
+
+
+@pytest.mark.parametrize(
+    "falla, respaldo",
+    [
+        ([LLMNoDisponible("sin red")], "sin_conexion"),
+        ([LLMError("500")], "error_gemini"),
+        (["   "], "respuesta_invalida"),
+    ],
+)
+def test_explicar_gemini_cae_a_ollama(cliente_con, falla, respaldo):
+    cliente, provs = cliente_con(gemini=falla, ollama=["Texto local."], explicar="gemini")
+    r = cliente.post("/explicar", json=EXPLICAR)
+
+    assert r.status_code == 200, r.text
+    assert r.json()["proveedor"] == "ollama" and r.json()["respaldo"] == respaldo
+    assert r.json()["explicacion"] == "Texto local."
+
+
+def test_explicar_con_gemini_sin_respaldo(cliente_con):
+    cliente, provs = cliente_con(gemini=["Texto de Gemini."], explicar="gemini")
+    r = cliente.post("/explicar", json=EXPLICAR)
+
+    assert r.json()["proveedor"] == "gemini" and r.json()["respaldo"] is None
+    assert provs["gemini"].llamadas[0]["pensar_minimo"] is True
+    assert provs["ollama"].llamadas == []
+
+
+def test_explicar_gemini_sin_api_key_usa_ollama(cliente_con):
+    cliente, _ = cliente_con(gemini=None, ollama=["Texto local."], explicar="gemini")
+    r = cliente.post("/explicar", json=EXPLICAR)
+
+    assert r.json()["proveedor"] == "ollama" and r.json()["respaldo"] == "sin_api_key"
+
+
+def test_explicar_503_si_nadie_responde(cliente_con):
+    cliente, _ = cliente_con(gemini=[LLMNoDisponible("x")], ollama=[LLMNoDisponible("y")], explicar="gemini")
+    assert cliente.post("/explicar", json=EXPLICAR).status_code == 503

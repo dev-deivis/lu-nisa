@@ -179,17 +179,45 @@ async def explicar(entrada: ExplicarEntrada, proveedores: dict[str, Proveedor] =
         datos=datos,
         razon_siembra=frase_siembra(entrada.siembra, entrada.mes_actual) if entrada.siembra else "(no hay)",
     )
+    respaldo = None if llm.nombre == config.PROVEEDOR_EXPLICAR else "sin_api_key"
+
+    # Igual que /analizar-parcela: si Gemini falla o no hay red, cae a Ollama
+    if llm.nombre != "ollama":
+        try:
+            explicacion = max_oraciones(
+                await llm.generar(prompt, sistema=prompts.SISTEMA_EXPLICAR, pensar_minimo=True)
+            )
+            if explicacion:
+                return ExplicarRespuesta(
+                    explicacion=explicacion,
+                    respaldo=None,
+                    proveedor=llm.nombre,
+                    modelo=llm.modelo,
+                    latencia_ms=ms_desde(inicio),
+                )
+            respaldo = "respuesta_invalida"
+            log.warning("Gemini devolvió texto vacío en /explicar, uso Ollama")
+        except LLMNoDisponible as e:
+            respaldo = "sin_conexion"
+            log.warning("Gemini no disponible en /explicar, uso Ollama: %s", e)
+        except LLMError as e:
+            respaldo = "error_gemini"
+            log.warning("Gemini falló en /explicar, uso Ollama: %s", e)
+        llm = proveedores["ollama"]
+
     try:
-        texto = await llm.generar(prompt, sistema=prompts.SISTEMA_EXPLICAR, pensar_minimo=True)
+        explicacion = max_oraciones(await llm.generar(prompt, sistema=prompts.SISTEMA_EXPLICAR))
     except (LLMNoDisponible, LLMError) as e:
         raise errores_llm(e)
-
-    explicacion = max_oraciones(texto)
     if not explicacion:
         raise HTTPException(502, {"error": "respuesta_vacia_llm", "detalle": "El modelo no devolvió texto"})
 
     return ExplicarRespuesta(
-        explicacion=explicacion, proveedor=llm.nombre, modelo=llm.modelo, latencia_ms=ms_desde(inicio)
+        explicacion=explicacion,
+        respaldo=respaldo,
+        proveedor=llm.nombre,
+        modelo=llm.modelo,
+        latencia_ms=ms_desde(inicio),
     )
 
 

@@ -31,7 +31,8 @@ class BackendService {
   );
 
   static const _timeoutAnalisis = Duration(seconds: 90);
-  static const _timeoutExplicar = Duration(seconds: 60);
+  // Gemini (30 s máx.) + respaldo en Ollama en frío (~40 s); carga en segundo plano
+  static const _timeoutExplicar = Duration(seconds: 90);
 
   static Future<String> obtenerUrl() async {
     try {

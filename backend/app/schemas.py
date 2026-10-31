@@ -71,6 +71,8 @@ class ExplicarEntrada(BaseModel):
 
 class ExplicarRespuesta(BaseModel):
     explicacion: str
+    # Por qué se usó Ollama en vez del proveedor preferido (None si respondió el preferido)
+    respaldo: Literal["sin_conexion", "error_gemini", "respuesta_invalida", "sin_api_key"] | None
     proveedor: str
     modelo: str
     latencia_ms: int

@@ -19,7 +19,7 @@ ollama pull gemma4:e4b        # respaldo local y /explicar
 | Tarea | Preferido | Respaldo |
 |---|---|---|
 | `/analizar-parcela` | Gemini `gemma-4-26b-a4b-it` (`PROVEEDOR_ANALISIS`) | Ollama `gemma4:e4b` si Gemini falla, no hay red o no hay API key. En ese caso `humedad_aparente="no_determinable"` y `humedad_preguntar_usuario=true` (e4b no distingue húmeda de seca) |
-| `/explicar` | Ollama (`PROVEEDOR_EXPLICAR`, funciona sin internet) | — |
+| `/explicar` | Ollama (`PROVEEDOR_EXPLICAR`, funciona sin internet) | Si `PROVEEDOR_EXPLICAR=gemini` y Gemini falla, no hay red o no hay API key, cae a Ollama |
 
 ## Endpoints
 
@@ -27,7 +27,7 @@ ollama pull gemma4:e4b        # respaldo local y /explicar
 |---|---|---|
 | `GET /salud` | — | proveedor activo y si el modelo responde |
 | `POST /analizar-parcela` | multipart `imagen` (jpeg/png/webp, ≤10 MB) | `{analisis, humedad_preguntar_usuario, respaldo, proveedor, modelo, intentos, latencia_ms}` |
-| `POST /explicar` | `{municipio, cultivo, puntaje, datos_regla: {clave: {valor, fuente: foto\|campesino\|datos}}}` | `{explicacion, proveedor, modelo, latencia_ms}` |
+| `POST /explicar` | `{municipio, cultivo, puntaje, datos_regla: {clave: {valor, fuente: foto\|campesino\|datos}}}` | `{explicacion, respaldo, proveedor, modelo, latencia_ms}` |
 
 `analisis` solo trae atributos observables (`es_parcela`, `suelo_desnudo`, `humedad_aparente`,
 `pendiente`, `piedras`, `cobertura_vegetal`, `confianza`, `observaciones`). Nunca fertilidad, nutrientes ni pH.
@@ -44,3 +44,7 @@ Errores: `415` imagen inválida · `413` muy grande · `502` el modelo respondi�
 ```
 
 Fotos esperadas en `samples/`: `seca_desnuda.jpg`, `humeda_desnuda.jpg`, `milpa.jpg`, `mucho_cielo.jpg`, `no_parcela.jpg`.
+
+## Limitaciones conocidas
+
+- **Rangos de lluvia del CSV** (`assets/data/cultivos_sierra_norte.csv`): las columnas `precipitacion_min_mm` y `precipitacion_max_mm` mezclan criterios. En algunos cultivos parecen ser la lluvia del ciclo (de la siembra a la cosecha) y en otros la lluvia anual de la zona donde se siembran. Por eso el puntaje base de `generar_recomendaciones.py` todavía no compara la lluvia de forma consistente. Los rangos deben validarse con un agrónomo o con una fuente oficial (SIAP/INIFAP) antes de usar los puntajes como recomendación real.
